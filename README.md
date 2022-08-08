@@ -32,13 +32,25 @@ Use [this world deletion program](https://gist.github.com/Specnr/8a572ac5c5cfdb5
 
 Adds the media/lock.png on screen whenever you lock an instance (does NOT require OBS Websocket)
 
-1) Set lockIndicators in settings.ahk to True
-2) Start the macro, then lock all instances
-3) This will create an image in each of your instance's .minecraft folder named lock.png, add an Image source to OBS for each corresponding instance and use the lock image created in that specific instance's .minecraft folder.
+1) Start the macro, then lock all instances
+2) This will create an image in each of your instance's .minecraft folder named lock.png, add an Image source to OBS for each corresponding instance and use the lock image created in that specific instance's .minecraft folder.
 
 Make sure you AREN'T adding the lock.png file that is included in the media folder. You may customize your lock images by simply replacing the png files in your wall media folder. Changing the files in your .minecraft folders won't do anything.
 
 After that it should be working. Open a ticket in the [Discord](https://discord.gg/tXxwrYw) if you have any issues or need clarification.
+
+## Utility Functions
+
+In the /utils folder, you'll find some helpful scripts which we will add to over time.
+
+### Startup.ahk
+This script will startup your instances for you, however it will only work after your first session.
+
+If you want, you can create a names.txt file in the /data folder with one name per line, and one line per instance to launch your instances in offline mode with custom names.
+
+### CloseInstances.ahk
+This script will simply close all your instances for you. This is also an option in TheWall.ahk tray options
+
 
 ## OBS Websocket
 
