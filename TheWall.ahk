@@ -5,9 +5,10 @@
 #Persistent
 #SingleInstance Force
 #Include %A_ScriptDir%\scripts\functions.ahk
+#Include %A_ScriptDir%\scripts\MCDirAndPidFunctions.ahk
 #Include %A_ScriptDir%\scripts\Instance.ahk
 #Include %A_ScriptDir%\scripts\GlobalConstants.ahk
-#Include settings.ahk
+#Include settings-Mach.ahk
 
 SetKeyDelay, 0
 SetWinDelay, 1
@@ -36,7 +37,6 @@ FileDelete, data/log.log
 
 SendLog(LOG_LEVEL_INFO, "Starting MultiResetWall v1.2")
 
-OnMessage(MSG_CONFIRM_RM, "ConfirmRM")
 OnMessage(MSG_ASSIGN_RMPID, "AssignResetManagerPID")
 
 CheckAHKVersion()
@@ -66,4 +66,4 @@ if (!disableTTS)
 
 OnExit("Shutdown")
 
-#Include hotkeys.ahk
+#Include hotkeys-Mach.ahk

@@ -5,7 +5,6 @@ global MSG_RESET := 0x04E20
 global MSG_KILL := 0x04E21
 global MSG_TEST := 0x04E22
 global MSG_ASSIGN_RMPID := 0x04E23
-global MSG_CONFIRM_RM := 0x04E24
 global MSG_TEST_RESET := 0x04E25
 
 global LOG_LEVEL_INFO := "INFO"

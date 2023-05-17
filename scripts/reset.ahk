@@ -1,6 +1,6 @@
 #NoEnv
 #NoTrayIcon
-#Include settings.ahk
+#Include settings-Mach.ahk
 #Include %A_ScriptDir%\functions.ahk
 #Include %A_ScriptDir%\GlobalConstants.ahk
 #SingleInstance, off
@@ -44,7 +44,6 @@ FileDelete, %killFile%
 SendLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started: {2} {3} {4} {5} {6} {7} {8} {9} {10} {11} {12} {13}", idx, pid, idleFile, holdFile, previewFile, lockFile, playBitMask, lockBitMask, highBitMask, midBitMask, lowBitMask, bgLoadBitMask, doubleCheckUnexpectedLoads))
 
 DetectHiddenWindows, On
-; PostMessage, MSG_CONFIRM_RM, idx,,, % Format("ahk_pid {1}", mainPID)
 ; PostMessage, MSG_TEST, PREVIEW_FOUND, A_TickCount,, % Format("ahk_pid {1}", mainPID)
 ; PostMessage, MSG_TEST_RESET, StrLen(mcDir), &mcDir,, % Format("ahk_pid {1}", mainPID)
 PostMessage, MSG_ASSIGN_RMPID, idx, rmPID,, % Format("ahk_pid {1}", mainPID)
@@ -93,7 +92,7 @@ ManageReset() {
                 covered := false
                 SendOBSCmd(Format("Cover,0,{1}", idx))
             }
-
+            
             perc := StrSplit(wpState, ",")[2]
             if (perc < previewLoadPercent) {
                 state := "pre-preview"
