@@ -10,11 +10,19 @@
 #Include %A_ScriptDir%\scripts\GlobalConstants.ahk
 #Include settings-Mach.ahk
 
+CheckAHKVersion()
+
 SetKeyDelay, 0
 SetWinDelay, 1
 SetTitleMatchMode, 2
 SetBatchLines, -1
 Thread, NoTimers , True
+
+FileDelete, data/log.log
+
+OnMessage(MSG_ASSIGN_RMPID, "AssignResetManagerPID")
+
+SendLog(LOG_LEVEL_INFO, "Starting MultiResetWall v1.2")
 
 global playThreads := playThreadsOverride > 0 ? playThreadsOverride : THREAD_COUNT ; total threads unless override
 global lockThreads := lockThreadsOverride > 0 ? lockThreadsOverride : THREAD_COUNT ; total threads unless override
@@ -30,18 +38,8 @@ global midBitMask := GetBitMask(midThreads)
 global lowBitMask := GetBitMask(lowThreads)
 global bgLoadBitMask := GetBitMask(bgLoadThreads)
 
-global instances := []
 global mainPID := GetScriptPID()
-
-FileDelete, data/log.log
-
-SendLog(LOG_LEVEL_INFO, "Starting MultiResetWall v1.2")
-
-OnMessage(MSG_ASSIGN_RMPID, "AssignResetManagerPID")
-
-CheckAHKVersion()
-
-CreateInstanceArray()
+global instances := CreateInstanceArray()
 
 SetTheme(theme)
 

@@ -1,3 +1,24 @@
+CreateInstanceArray() {
+    SendLog(LOG_LEVEL_INFO, "Populating Minecraft instance data")
+    rawPIDs := GetRawPIDs()
+    
+    if (!rawPIDs.Length()) {
+        LaunchInstances()
+    }
+    
+    mcdirs := []
+    if (rawPIDs.Length() == GetLineCount("data/mcdirs.txt") && FileExist("data/mcdirs.txt"))
+        mcdirs := GetMcDirsFromCache(rawPIDs.Length())
+    else
+        mcdirs := GetMcDirsFromPids(rawPIDs)
+    
+    instArray := []
+    for idx, mcDir in mcdirs {
+        instArray.Push(new Instance(idx, GetPIDFromMcDir(mcDir), mcDir))
+    }
+    return instArray
+}
+
 GetMcDir(pid) {
     command := Format("powershell.exe $x = Get-WmiObject Win32_Process -Filter \""ProcessId = {1}\""; $x.CommandLine", pid)
     rawOut := RunHide(command)

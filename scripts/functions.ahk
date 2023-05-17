@@ -234,27 +234,6 @@ RunHide(Command) {
     Return Result
 }
 
-CreateInstanceArray() {
-    SendLog(LOG_LEVEL_INFO, "Populating Minecraft instance data")
-    rawPIDs := GetRawPIDs()
-    
-    if (!rawPIDs.Length()) {
-        LaunchInstances()
-    }
-    
-    mcdirs := []
-    if (rawPIDs.Length() == GetLineCount("data/mcdirs.txt") && FileExist("data/mcdirs.txt"))
-        mcdirs := GetMcDirsFromCache(rawPIDs.Length())
-    else
-        mcdirs := GetMcDirsFromPids(rawPIDs)
-    
-    Critical, On
-    for idx, mcDir in mcdirs {
-        instances.Push(new Instance(idx, GetPIDFromMcDir(mcDir), mcDir))
-    }
-    Critical, Off
-}
-
 getHwndForPid(pid) {
     pidStr := "ahk_pid " . pid
     WinGet, hWnd, ID, %pidStr%
