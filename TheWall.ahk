@@ -22,6 +22,9 @@ FileDelete, data/log.log
 
 OnMessage(MSG_ASSIGN_RMPID, "AssignResetManagerPID")
 
+OnMessage(MSG_PREVIEW, "UpdateInstancePreview")
+OnMessage(MSG_LOAD, "UpdateInstanceLoad")
+
 SendLog(LOG_LEVEL_INFO, "Starting MultiResetWall v1.2")
 
 global playThreads := playThreadsOverride > 0 ? playThreadsOverride : THREAD_COUNT ; total threads unless override
@@ -38,8 +41,10 @@ global midBitMask := GetBitMask(midThreads)
 global lowBitMask := GetBitMask(lowThreads)
 global bgLoadBitMask := GetBitMask(bgLoadThreads)
 
+Critical, On
 global mainPID := GetScriptPID()
 global instances := CreateInstanceArray()
+Critical, Off
 
 SetTheme(theme)
 
@@ -55,7 +60,7 @@ BindTrayIconFunctions()
 
 SendOBSCmd(GetCoverTypeObsCmd("Cover",false, instances))
 
-ToWall(0)
+; ToWall(0)
 
 FileAppend,,data/macro.reload
 SendLog(LOG_LEVEL_INFO, "Wall setup done")

@@ -9,16 +9,14 @@ class Instance {
         this.idx := idx
         this.pid := pid
         this.mcDir := mcDir
+        
         this.locked := false
-        this.playing := false
+        this.state := "idle"
+        this.previewStart := 0
+        this.idleStart := 0
         this.focus := true
-        this.idleFile := Format("{1}idle.tmp", mcDir)
-        this.lockFile := Format("{1}lock.tmp", mcDir)
+        
         this.lockImage := Format("{1}lock.png", mcDir)
-        this.holdFile := Format("{1}hold.tmp", mcDir)
-        this.previewFile := Format("{1}preview.tmp", mcDir)
-        this.doubleCheckUnexpectedLoads := true
-        this.InitializeFiles()
         
         this.LaunchResetManager()
         
@@ -63,7 +61,7 @@ class Instance {
             return
         }
         
-        this.playing := true
+        this.state := "playing"
         
         this.SwitchFiles()
         
@@ -100,7 +98,7 @@ class Instance {
         
         this.window.SendToBack()
         
-        this.playing := false
+        this.state := "resetting"
     }
     
     Lock(sound:=true, affinityChange:=true) {
@@ -132,7 +130,6 @@ class Instance {
         }
         FileCopy, % GetLockImage(), % this.lockImage, 1
         FileSetTime,, % this.lockImage, M
-        FileAppend,, % this.lockFile
     }
     
     UnlockFiles() {
@@ -143,13 +140,14 @@ class Instance {
             FileCopy, A_ScriptDir\..\media\unlock.png, % this.lockImage, 1
             FileSetTime,, % this.lockImage, M
         }
-        FileDelete, % this.lockFile
     }
     
     SendReset() {
         if (!this.rmPID) {
             return
         }
+        
+        this.state := "resetting"
         
         this.window.SendResetInput()
         
@@ -158,14 +156,37 @@ class Instance {
         DetectHiddenWindows, Off
     }
     
+    UpdatePreview(time) {
+        if (this.GetPreviewing() || this.GetPlaying()) {
+            return
+        }
+        
+        this.state := "previewing"
+        this.previewStart := time
+        pauseFunc := Func("SendPauseInput").Bind(this.pid)
+        SetTimer, %pauseFunc%, -%beforePauseDelay%
+    }
+    
+    UpdateLoad(time) {
+        if (this.GetIdle() || this.GetPlaying()) {
+            return
+        }
+        
+        this.state := "idle"
+        this.idleStart := time
+        pauseFunc := Func("SendPauseInput").Bind(this.pid)
+        SetTimer, %pauseFunc%, -%beforePauseDelay%
+    }
+    
     CloseInstance() {
         WinClose, % Format("ahk_pid {1}", this.pid)
         this.KillResetManager()
     }
     
     LaunchResetManager() {
-        SendLog(LOG_LEVEL_INFO, Format("Running a reset manager: {1} {2} {3} {4} {5}", this.idx, this.pid, this.doubleCheckUnexpectedLoads, mainPID, this.mcDir))
-        Run, % Format("""{1}`\scripts`\reset.ahk"" {2} {3} {4} {5} ""{6}", A_ScriptDir, this.idx, this.pid, this.doubleCheckUnexpectedLoads, mainPID, this.mcDir), %A_ScriptDir%,, rmPID
+        stateFile := Format("{1}wpstateout.txt", this.mcDir)
+        SendLog(LOG_LEVEL_INFO, Format("Running a reset manager: {1} {2} {3}", this.idx, mainPID, stateFile))
+        Run, % Format("""{1}`\scripts`\reset.ahk"" {2} {3} ""{4}", A_ScriptDir, this.idx, mainPID, stateFile), %A_ScriptDir%,, rmPID
         this.rmPID := rmPID
     }
     
@@ -175,14 +196,5 @@ class Instance {
         WinWaitClose, % Format("ahk_pid {1}", this.rmPID)
         DetectHiddenWindows, Off
         this.window.SetAffinity(GetBitMask(THREAD_COUNT))
-    }
-    
-    InitializeFiles() {
-        if (!FileExist(this.idleFile))
-            FileAppend, %A_TickCount%, % this.idleFile
-        if FileExist(this.holdFile)
-            FileDelete, % this.holdFile
-        if FileExist(this.previewFile)
-            FileDelete, % this.previewFile
     }
 }

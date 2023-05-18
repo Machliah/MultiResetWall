@@ -18,15 +18,10 @@ SwitchToInstanceObs() {
 }
 
 SwitchFiles() {
-    FileAppend,, % this.holdFile
-    FileDelete, data/instance.txt
-    FileAppend, % this.idx, data/instance.txt
     FileAppend,, % Format("{1}/sleepbg.lock", USER_PROFILE)
 }
 
 ExitFiles() {
-    FileDelete, % this.holdFile
-    FileDelete, % this.killFile
     FileDelete, % Format("{1}/sleepbg.lock", USER_PROFILE)
 }
 

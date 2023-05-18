@@ -23,15 +23,28 @@ Shutdown(ExitReason, ExitCode) {
 }
 
 GetScriptPID() {
+    dhw := A_DetectHiddenWindows
     DetectHiddenWindows, On
     WinGet, scriptPID, PID, %A_ScriptFullPath% - AutoHotkey v
-    DetectHiddenWindows, Off
+    DetectHiddenWindows, %dhw%
     return scriptPID
 }
 
 AssignResetManagerPID(idx, rmPID) {
     SendLog(LOG_LEVEL_INFO, Format("Set instance {1} rmPID to {2}", idx, rmPID))
     instances[idx].SetRMPID(rmPID)
+}
+
+UpdateInstancePreview(idx, time) {
+    instances[idx].UpdatePreview(time)
+}
+
+UpdateInstanceLoad(idx, time) {
+    instances[idx].UpdateLoad(time)
+}
+
+SendPauseInput(pid) {
+    ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, % Format("ahk_pid {1}", pid)
 }
 
 ; File safe function to increment overallAttemptsFile and dailyAttemptsFile each by 1
@@ -242,13 +255,17 @@ getHwndForPid(pid) {
 
 SetAffinities(idx:=0) {
     for i, instance in instances {
-        if (idx == instance.GetIdx()) { ; this is active instance
+        if (instance.GetPlaying()) { ; this is active instance
+            SendLog(LOG_LEVEL_INFO, instance.idx . "play affinity")
             instance.window.SetAffinity(playBitMask)
         } else if (idx > 0) { ; there is another active instance
-            if !instance.GetIdle()
+            if !instance.GetIdle() {
+                SendLog(LOG_LEVEL_INFO, instance.idx . "bg affinity")
                 instance.window.SetAffinity(bgLoadBitMask)
-            else
+            } else {
+                SendLog(LOG_LEVEL_INFO, instance.idx . "bg loaded affinity")
                 instance.window.SetAffinity(lowBitMask)
+            }
         } else { ; there is no active instance
             if instance.GetIdle()
                 instance.window.SetAffinity(lowBitMask)
@@ -346,12 +363,11 @@ SwitchInstance(idx, special:=False) {
 }
 
 GetActiveInstanceNum() {
-    WinGet, pid, PID, A
     for i, instance in instances {
-        if (instance.GetPID() == pid)
+        if (instance.GetPlaying())
             return instance.GetIdx()
     }
-    return -1
+    return 0
 }
 
 ExitWorld(nextInst:=-1) {
@@ -376,10 +392,17 @@ ResetAll(bypassLock:=false, extraProt:=0) {
     }
     
     for i, instance in resetable {
-        instance.window.SetAffinity(highBitMask)
+        if (GetActiveInstanceNum()) {
+            SendLog(LOG_LEVEL_INFO, Format("{1} bg affinity", instance.GetIdx()))
+            instance.window.SetAffinity(bgLoadBitMask)
+        } else {
+            SendLog(LOG_LEVEL_INFO, Format("{1} high affinity", instance.GetIdx()))
+            instance.window.SetAffinity(highBitMask)
+        }
         instance.SetLocked(false)
         instance.UnlockFiles()
     }
+    
     for i, instance in resetable {
         instance.SendReset()
     }
@@ -442,8 +465,6 @@ SetTitles() {
 
 ToWall(comingFrom) {
     currentInstance := -1
-    FileDelete,data/instance.txt
-    FileAppend,0,data/instance.txt
     
     VerifyProjector()
     WinMaximize, % Format("ahk_id {1}", GetProjectorID())

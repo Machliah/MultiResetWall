@@ -17,7 +17,11 @@ GetLocked() {
 }
 
 GetPlaying() {
-    return this.playing
+    return this.state == "playing"
+}
+
+GetResetting() {
+    return this.state == "resetting"
 }
 
 GetFocus() {
@@ -25,50 +29,40 @@ GetFocus() {
 }
 
 GetIdle() {
-    return FileExist(this.idleFile)
-}
-
-GetHeld() {
-    return FileExist(this.holdFile)
+    return this.state == "idle"
 }
 
 GetPreviewing() {
-    return FileExist(this.previewFile)
+    return this.state == "previewing"
 }
 
 GetPreviewTime() {
-    FileRead, previewStartTime, % this.previewFile
-    previewStartTime += 0
-    previewTime := A_TickCount - previewStartTime
-    return previewTime
+    return A_TickCount - this.previewStart
 }
 
 GetCanPlay() {
     if (this.GetIdle() || mode == "C")
         return true
-
+    
     return false
 }
 
 GetCanReset(bypassLock:=true, extraProt:=0, force:=false) {
-
+    
     if (!this.rmPID)
         return false
-
+    
     if (force)
         return true
-
+    
     if (this.locked && !bypassLock)
         return false
-
-    if (this.GetHeld())
-        return false
-
+    
     if (this.GetPreviewTime() < spawnProtection + extraProt)
         return false
-
-    if (this.playing)
+    
+    if (this.GetPlaying() || this.GetResetting())
         return false
-
+    
     return true
 }
