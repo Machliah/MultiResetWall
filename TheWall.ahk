@@ -12,7 +12,7 @@
 
 CheckAHKVersion()
 
-SetKeyDelay, 0
+SetKeyDelay, -1
 SetWinDelay, 1
 SetTitleMatchMode, 2
 SetBatchLines, -1
