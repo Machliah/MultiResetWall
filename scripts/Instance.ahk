@@ -39,10 +39,8 @@ class Instance {
         
         this.SendReset()
         
-        this.window.SetAffinity(highBitMask)
-        
         if (mode == "I")
-            MoveResetInstance(idx)
+            MoveResetInstance(this.idx)
         else if (obsControl == "C")
             SendOBSCmd(GetCoverTypeObsCmd("Cover",true,[this]))
         
@@ -65,7 +63,7 @@ class Instance {
         
         this.SwitchFiles()
         
-        SetAffinities(this.idx)
+        ManageAffinities()
         
         this.window.SwitchTo()
         
@@ -75,6 +73,8 @@ class Instance {
     }
     
     Exit(nextInst:=-1) {
+        this.state := "resetting"
+        
         this.window.GhostPie()
         
         this.window.ToggleFullscreen(false)
@@ -83,9 +83,9 @@ class Instance {
         
         this.window.Restore()
         
-        SetAffinities(nextInst)
-        
         this.Reset(,,true)
+        
+        ManageAffinities()
         
         nextInst := GetNextInstance(this.idx, nextInst)
         if (nextInst <= 0) {
@@ -97,8 +97,6 @@ class Instance {
         this.window.Widen()
         
         this.window.SendToBack()
-        
-        this.state := "resetting"
     }
     
     Lock(sound:=true, affinityChange:=true) {
@@ -108,8 +106,9 @@ class Instance {
         
         this.locked := true
         
-        if affinityChange
-            this.window.SetAffinity(lockBitMask)
+        if affinityChange {
+            ManageAffinity(this)
+        }
         
         LockSound(sound)
     }
@@ -149,6 +148,8 @@ class Instance {
         
         this.state := "resetting"
         
+        ManageAffinity(this)
+        
         this.window.SendResetInput()
         
         DetectHiddenWindows, On
@@ -165,6 +166,8 @@ class Instance {
         this.previewStart := time
         pauseFunc := Func("SendPauseInput").Bind(this.pid)
         SetTimer, %pauseFunc%, -%beforePauseDelay%
+        affinityFunc := Func("ManageAffinity").Bind(this)
+        SetTimer, %affinityFunc%, -%previewBurstLength%
     }
     
     UpdateLoad(time) {
@@ -176,6 +179,8 @@ class Instance {
         this.idleStart := time
         pauseFunc := Func("SendPauseInput").Bind(this.pid)
         SetTimer, %pauseFunc%, -%beforePauseDelay%
+        affinityFunc := Func("ManageAffinity").Bind(this)
+        SetTimer, %affinityFunc%, -%previewBurstLength%
     }
     
     CloseInstance() {

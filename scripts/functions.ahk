@@ -253,38 +253,39 @@ getHwndForPid(pid) {
     return hWnd
 }
 
-SetAffinities(idx:=0) {
-    for i, instance in instances {
-        if (instance.GetPlaying()) { ; this is active instance
-            SendLog(LOG_LEVEL_INFO, instance.idx . "play affinity")
-            instance.window.SetAffinity(playBitMask)
-        } else if (idx > 0) { ; there is another active instance
-            if !instance.GetIdle() {
-                SendLog(LOG_LEVEL_INFO, instance.idx . "bg affinity")
-                instance.window.SetAffinity(bgLoadBitMask)
-            } else {
-                SendLog(LOG_LEVEL_INFO, instance.idx . "bg loaded affinity")
-                instance.window.SetAffinity(lowBitMask)
-            }
-        } else { ; there is no active instance
-            if instance.GetIdle()
-                instance.window.SetAffinity(lowBitMask)
-            else if instance.GetLocked()
-                instance.window.SetAffinity(lockBitMask)
-            else if instance.GetHeld()
-                instance.window.SetAffinity(highBitMask)
-            else if instance.GetPreviewing()
-                instance.window.SetAffinity(midBitMask)
-            else
-                instance.window.SetAffinity(highBitMask)
+ManageAffinity(instance) {
+    if (instance.GetPlaying()) { ; this is active instance
+        SendLog(LOG_LEVEL_INFO, instance.idx . " play affinity")
+        instance.window.SetAffinity(playBitMask)
+    } else if (GetActiveInstanceNum()) { ; there is another active instance
+        if (instance.GetIdle() && !instance.GetLocked()) { ; full loaded and unlocked in bg
+            SendLog(LOG_LEVEL_INFO, instance.idx . " bg loaded affinity")
+            instance.window.SetAffinity(lowBitMask)
+        } else { ; still loading in bg
+            SendLog(LOG_LEVEL_INFO, instance.idx . " bg affinity")
+            instance.window.SetAffinity(bgLoadBitMask)
+        }
+    } else { ; there is no active instance
+        if (instance.GetIdle()) { ; full load
+            SendLog(LOG_LEVEL_INFO, instance.idx . " loaded affinity")
+            instance.window.SetAffinity(lowBitMask)
+        } else if (instance.GetLocked()) { ; not full loaded but locked
+            SendLog(LOG_LEVEL_INFO, instance.idx . " locked affinity")
+            instance.window.SetAffinity(lockBitMask)
+        } else if (instance.GetResetting()) { ; not full loaded or locked but resetting
+            SendLog(LOG_LEVEL_INFO, instance.idx . " reset affinity")
+            instance.window.SetAffinity(highBitMask)
+        } else if (instance.GetPreviewing()) { ; not full loaded or locked or resetting but previewing
+            SendLog(LOG_LEVEL_INFO, instance.idx . " preview affinity")
+            instance.window.SetAffinity(midBitMask)
         }
     }
 }
 
-SetAffinity(pid, mask) {
-    hProc := DllCall("OpenProcess", "UInt", 0x0200, "Int", false, "UInt", pid, "Ptr")
-    DllCall("SetProcessAffinityMask", "Ptr", hProc, "Ptr", mask)
-    DllCall("CloseHandle", "Ptr", hProc)
+ManageAffinities() {
+    for i, instance in instances {
+        ManageAffinity(instance)
+    }
 }
 
 GetBitMask(threads) {
@@ -371,6 +372,17 @@ GetActiveInstanceNum() {
     return 0
 }
 
+CheckOverall() {
+    WinGet, pid, PID, A
+    for i, inst in instances {
+        if (inst.GetPlaying() && inst.GetPID() != pid) {
+            inst.SetPlaying(false)
+        } else if (!inst.GetPlaying() && inst.GetPID() == pid) {
+            inst.SetPlaying(true)
+        }
+    }
+}
+
 ExitWorld(nextInst:=-1) {
     instances[GetActiveInstanceNum()].Exit(nextInst)
 }
@@ -393,20 +405,15 @@ ResetAll(bypassLock:=false, extraProt:=0) {
     }
     
     for i, instance in resetable {
-        if (GetActiveInstanceNum()) {
-            SendLog(LOG_LEVEL_INFO, Format("{1} bg affinity", instance.GetIdx()))
-            instance.window.SetAffinity(bgLoadBitMask)
-        } else {
-            SendLog(LOG_LEVEL_INFO, Format("{1} high affinity", instance.GetIdx()))
-            instance.window.SetAffinity(highBitMask)
-        }
         instance.SetLocked(false)
         instance.UnlockFiles()
-    }
-    
-    for i, instance in resetable {
         instance.SendReset()
     }
+}
+
+FocusReset(focusInstance, bypassLock:=false, special:=false) {
+    SwitchInstance(focusInstance, special)
+    ResetAll(bypassLock, spawnProtection)
 }
 
 GetResetableInstances(checkInstances, bypassLock:=false, extraProt:=0) {
@@ -481,11 +488,6 @@ ToWall(comingFrom) {
     }
 }
 
-FocusReset(focusInstance, bypassLock:=false, special:=false) {
-    SwitchInstance(focusInstance, special)
-    ResetAll(bypassLock, spawnProtection)
-}
-
 GetLockImage() {
     static lockImages := []
     if (lockImages.MaxIndex() < 1) {
@@ -550,8 +552,9 @@ LockAll(sound:=true, affinityChange:=true) {
     for i, instance in lockable {
         instance.SetLocked(true)
         instance.LockFiles()
-        if affinityChange
-            instance.window.SetAffinity(lockBitMask)
+        if affinityChange {
+            ManageAffinity(instance)
+        }
     }
     
     LockSound(sound)

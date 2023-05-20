@@ -31,12 +31,11 @@ global bypassThreshold := -1 ; The maximum number of fully loaded instances wher
 global affinityType := "B" ; N = no affinity management, B = basic affinity management, A = advanced affinity mangement (best if used with locking+resetAll)
 global playThreadsOverride := -1 ; Thread count for instance you are playing
 global lockThreadsOverride := -1 ; Thread count for locked instances loading on wall
-global highThreadsOverride := -1 ; Thread count for instances on the 0% dirt screen while on wall
+global highThreadsOverride := -1 ; Thread count for instances still resetting while on wall
 global midThreadsOverride := -1 ; Thread count for instances loading a preview (previewBurstLength) after detecting it
-global lowThreadsOverride := -1 ; Thread count for instances loading a preview that has reached (previewLoadPercent) requirement and all idle instances
-global bgLoadThreadsOverride := -1 ; Thread count for loading instances, and locked instances in bg
-global previewBurstLength := 500 ; The delay before switching from high to mid while on wall or from bgLoad to low while in bg
-global previewLoadPercent := 15 ; The percentage of world gen that must be reached before lowering to low
+global lowThreadsOverride := -1 ; Thread count for all fully loaded instances
+global bgLoadThreadsOverride := -1 ; Thread count for loading or locked instances in bg
+global previewBurstLength := 600 ; The delay before switching from high to mid while on wall or from bgLoad to low while in bg
 
 ; OBS
 global obsControl := "C" ; C = Controller, N = Numpad keys (<10 inst), F = Function keys (f13-f24), ARR = advanced array (see customKeyArray)
