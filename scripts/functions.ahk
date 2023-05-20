@@ -363,9 +363,10 @@ SwitchInstance(idx, special:=False) {
 }
 
 GetActiveInstanceNum() {
-    for i, instance in instances {
-        if (instance.GetPlaying())
-            return instance.GetIdx()
+    for i, inst in instances {
+        if (inst.GetPlaying()) {
+            return inst.GetIdx()
+        }
     }
     return 0
 }
@@ -411,8 +412,9 @@ ResetAll(bypassLock:=false, extraProt:=0) {
 GetResetableInstances(checkInstances, bypassLock:=false, extraProt:=0) {
     resetable := []
     for i, instance in checkInstances {
-        if (instance.GetCanReset(bypassLock, extraProt))
+        if (instance.GetCanReset(bypassLock, extraProt)) {
             resetable.Push(instance)
+        }
     }
     return resetable
 }
