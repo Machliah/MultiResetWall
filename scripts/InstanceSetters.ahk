@@ -12,7 +12,3 @@ SetPlaying(playing) {
 SetLocked(lock) {
     this.locked := lock
 }
-
-SetRMPID(rmPID) {
-    this.rmPID := rmPID
-}

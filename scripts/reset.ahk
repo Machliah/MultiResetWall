@@ -5,26 +5,22 @@
 #Include %A_ScriptDir%\GlobalConstants.ahk
 #SingleInstance, off
 
-SetKeyDelay, 0
 SetBatchLines, -1
 DetectHiddenWindows, On
 
 global idx := A_Args[1]
 global mainPID := A_Args[2]
 global wpStateFile := A_Args[3]
-global rmPID := GetScriptPID()
 
 global previousWPState := "unknown"
 
 OnMessage(MSG_RESET, "ResetSound")
 OnMessage(MSG_KILL, "Kill")
 
-SendLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, MainPID: {2} PID: {3} state file: {4}", idx, mainPID, rmPID, wpStateFile))
-
-PostMessage, MSG_ASSIGN_RMPID, idx, rmPID,, % Format("ahk_pid {1}", mainPID)
+SendLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, MainPID: {2} state file: {4}", idx, mainPID, wpStateFile))
 
 SetTimer, CheckMain, 5000
-SetTimer, ManageReset, %resetManagementLoopDelay%
+SetTimer, ManageReset, 0
 
 ManageReset() {
     ; title
@@ -32,6 +28,7 @@ ManageReset() {
     ; generating,%
     ; previewing,%
     ; inworld,unpaused/paused/gamescreenopen
+    
     FileRead, wpState, %wpStateFile%
     
     if (wpState == previousWPState) {
@@ -55,11 +52,11 @@ Kill() {
 ResetSound() {
     if (sounds == "A" || sounds == "F" || sounds == "R") {
         SoundPlay, A_ScriptDir\..\media\reset.wav
-        if obsResetMediaKey {
-            send {%obsResetMediaKey% down}
-            sleep, %obsDelay%
-            send {%obsResetMediaKey% up}
-        }
+    }
+    if obsResetMediaKey {
+        send {%obsResetMediaKey% down}
+        sleep, %obsDelay%
+        send {%obsResetMediaKey% up}
     }
 }
 

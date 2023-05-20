@@ -16,11 +16,8 @@ SetKeyDelay, 0
 SetWinDelay, 1
 SetTitleMatchMode, 2
 SetBatchLines, -1
-; Thread, NoTimers, True
 
 FileDelete, data/log.log
-
-OnMessage(MSG_ASSIGN_RMPID, "AssignResetManagerPID")
 
 OnMessage(MSG_PREVIEW, "UpdateInstancePreview")
 OnMessage(MSG_LOAD, "UpdateInstanceLoad")

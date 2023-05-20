@@ -30,11 +30,6 @@ GetScriptPID() {
     return scriptPID
 }
 
-AssignResetManagerPID(idx, rmPID) {
-    SendLog(LOG_LEVEL_INFO, Format("Set instance {1} rmPID to {2}", idx, rmPID))
-    instances[idx].SetRMPID(rmPID)
-}
-
 UpdateInstancePreview(idx, time) {
     instances[idx].UpdatePreview(time)
 }
@@ -255,28 +250,28 @@ getHwndForPid(pid) {
 
 ManageAffinity(instance) {
     if (instance.GetPlaying()) { ; this is active instance
-        SendLog(LOG_LEVEL_INFO, instance.idx . " play affinity")
+        ; SendLog(LOG_LEVEL_INFO, instance.idx . " play affinity")
         instance.window.SetAffinity(playBitMask)
     } else if (GetActiveInstanceNum()) { ; there is another active instance
         if (instance.GetIdle() && !instance.GetLocked()) { ; full loaded and unlocked in bg
-            SendLog(LOG_LEVEL_INFO, instance.idx . " bg loaded affinity")
+            ; SendLog(LOG_LEVEL_INFO, instance.idx . " bg loaded affinity")
             instance.window.SetAffinity(lowBitMask)
         } else { ; still loading in bg
-            SendLog(LOG_LEVEL_INFO, instance.idx . " bg affinity")
+            ; SendLog(LOG_LEVEL_INFO, instance.idx . " bg affinity")
             instance.window.SetAffinity(bgLoadBitMask)
         }
     } else { ; there is no active instance
         if (instance.GetIdle()) { ; full load
-            SendLog(LOG_LEVEL_INFO, instance.idx . " loaded affinity")
+            ; SendLog(LOG_LEVEL_INFO, instance.idx . " loaded affinity")
             instance.window.SetAffinity(lowBitMask)
         } else if (instance.GetLocked()) { ; not full loaded but locked
-            SendLog(LOG_LEVEL_INFO, instance.idx . " locked affinity")
+            ; SendLog(LOG_LEVEL_INFO, instance.idx . " locked affinity")
             instance.window.SetAffinity(lockBitMask)
         } else if (instance.GetResetting()) { ; not full loaded or locked but resetting
-            SendLog(LOG_LEVEL_INFO, instance.idx . " reset affinity")
+            ; SendLog(LOG_LEVEL_INFO, instance.idx . " reset affinity")
             instance.window.SetAffinity(highBitMask)
         } else if (instance.GetPreviewing()) { ; not full loaded or locked or resetting but previewing
-            SendLog(LOG_LEVEL_INFO, instance.idx . " preview affinity")
+            ; SendLog(LOG_LEVEL_INFO, instance.idx . " preview affinity")
             instance.window.SetAffinity(midBitMask)
         }
     }
