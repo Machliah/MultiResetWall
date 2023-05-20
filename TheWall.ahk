@@ -21,6 +21,7 @@ FileDelete, data/log.log
 
 OnMessage(MSG_PREVIEW, "UpdateInstancePreview")
 OnMessage(MSG_LOAD, "UpdateInstanceLoad")
+OnMessage(MSG_RESET, "UpdateInstanceReset")
 
 SendLog(LOG_LEVEL_INFO, "Starting MultiResetWall v1.2")
 

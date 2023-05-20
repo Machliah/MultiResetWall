@@ -157,6 +157,15 @@ class Instance {
         DetectHiddenWindows, Off
     }
     
+    UpdateReset() {
+        if (this.GetResetting() || this.GetPlaying()) {
+            return
+        }
+        
+        this.state := "resetting"
+        ManageAffinity(this)
+    }
+    
     UpdatePreview(time) {
         if (this.GetPreviewing() || this.GetPlaying()) {
             return
@@ -164,8 +173,8 @@ class Instance {
         
         this.state := "previewing"
         this.previewStart := time
-        pauseFunc := Func("SendPauseInput").Bind(this.pid)
-        SetTimer, %pauseFunc%, -%beforePauseDelay%
+        pauseFunc := Func("SendPauseInput").Bind(this)
+        SetTimer, %pauseFunc%, -0
         affinityFunc := Func("ManageAffinity").Bind(this)
         SetTimer, %affinityFunc%, -%previewBurstLength%
     }
@@ -177,8 +186,8 @@ class Instance {
         
         this.state := "idle"
         this.idleStart := time
-        pauseFunc := Func("SendPauseInput").Bind(this.pid)
-        SetTimer, %pauseFunc%, -%beforePauseDelay%
+        pauseFunc := Func("SendPauseInput").Bind(this)
+        SetTimer, %pauseFunc%, -0
         affinityFunc := Func("ManageAffinity").Bind(this)
         SetTimer, %affinityFunc%, -%previewBurstLength%
     }

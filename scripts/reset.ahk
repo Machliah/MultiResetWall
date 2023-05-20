@@ -40,6 +40,8 @@ ManageReset() {
         ; SendOBSCmd(Format("Cover,0,{1}", idx))
     } else if (InStr(wpState, "inworld")) {
         PostMessage, MSG_LOAD, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
+    } else if (InStr(wpState, "waiting") || InStr(wpState, "generating")) {
+        PostMessage, MSG_RESET, idx,,, % Format("ahk_pid {1}", mainPID)
     }
     
     previousWPState := wpState

@@ -38,8 +38,15 @@ UpdateInstanceLoad(idx, time) {
     instances[idx].UpdateLoad(time)
 }
 
-SendPauseInput(pid) {
-    ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, % Format("ahk_pid {1}", pid)
+UpdateInstanceReset(idx) {
+    instances[idx].UpdateReset()
+}
+
+SendPauseInput(instance) {
+    if (instance.GetResetting()) {
+        return
+    }
+    ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, % Format("ahk_pid {1}", instance.GetPID())
 }
 
 ; File safe function to increment overallAttemptsFile and dailyAttemptsFile each by 1
@@ -271,8 +278,15 @@ ManageAffinity(instance) {
             ; SendLog(LOG_LEVEL_INFO, instance.idx . " reset affinity")
             instance.window.SetAffinity(highBitMask)
         } else if (instance.GetPreviewing()) { ; not full loaded or locked or resetting but previewing
-            ; SendLog(LOG_LEVEL_INFO, instance.idx . " preview affinity")
-            instance.window.SetAffinity(midBitMask)
+            if (instance.GetPreviewTime() < previewBurstLength) {
+                burstTimeLeft := previewBurstLength - instance.GetPreviewTime()
+                affinityFunc := Func("ManageAffinity").Bind(instance)
+                ; SendLog(LOG_LEVEL_INFO, instance.idx . " burst not finished yet, trying again in " . burstTimeLeft)
+                SetTimer, %affinityFunc%, -%burstTimeLeft%
+            } else {
+                ; SendLog(LOG_LEVEL_INFO, instance.idx . " preview affinity")
+                instance.window.SetAffinity(midBitMask)
+            }
         }
     }
 }
