@@ -143,6 +143,6 @@ CreateMcDirCache(rawNumToMcDir) {
     SendLog(LOG_LEVEL_INFO, "Creating MC directories cache file")
     FileDelete, data/mcdirs.txt
     for i, mcdir in rawNumToMcDir {
-        FileAppend,%A_Index%~%mcdir%`n,data/mcdirs.txt
+        FileAppend,%i%~%mcdir%`n,data/mcdirs.txt
     }
 }

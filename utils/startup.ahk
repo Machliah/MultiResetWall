@@ -1,6 +1,7 @@
 ; v1.0
 
 #Include, %A_ScriptDir%\..\scripts\functions.ahk
+#Include, %A_ScriptDir%\..\scripts\MCDirAndPidFunctions.ahk
 #SingleInstance, Force
 #NoEnv
 
