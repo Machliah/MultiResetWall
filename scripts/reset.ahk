@@ -14,32 +14,14 @@ global mainPID := A_Args[2]
 global wpStateFile := A_Args[3]
 global rmPID := GetScriptPID()
 
-global playThreads := playThreadsOverride > 0 ? playThreadsOverride : THREAD_COUNT ; total threads unless override
-global lockThreads := lockThreadsOverride > 0 ? lockThreadsOverride : THREAD_COUNT ; total threads unless override
-global highThreads := highThreadsOverride > 0 ? highThreadsOverride : affinityType != "N" ? Ceil(THREAD_COUNT * 0.95) : THREAD_COUNT ; 95% or 2 less than max threads, whichever is higher unless override or none
-global midThreads := midThreadsOverride > 0 ? midThreadsOverride : affinityType == "A" ? Ceil(THREAD_COUNT * 0.8) : highThreads ; 80% if advanced otherwise high unless override
-global lowThreads := lowThreadsOverride > 0 ? lowThreadsOverride : affinityType != "N" ? Ceil(THREAD_COUNT * 0.7) : THREAD_COUNT ; 70% if advanced otherwise high unless override
-global bgLoadThreads := bgLoadThreadsOverride > 0 ? bgLoadThreadsOverride : affinityType != "N" ? Ceil(THREAD_COUNT * 0.4) : THREAD_COUNT ; 40% unless override or none
-
-global playBitMask := GetBitMask(playThreads)
-global lockBitMask := GetBitMask(lockThreads)
-global highBitMask := GetBitMask(highThreads)
-global midBitMask := GetBitMask(midThreads)
-global lowBitMask := GetBitMask(lowThreads)
-global bgLoadBitMask := GetBitMask(bgLoadThreads)
-
 global previousWPState := "unknown"
 
-OnMessage(MSG_PLAY, "SetPlay")
-OnMessage(MSG_LOCK, "SetLock")
 OnMessage(MSG_RESET, "ResetSound")
 OnMessage(MSG_KILL, "Kill")
 
-SendLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, PID: {2} state file: {3}", idx, rmPID, wpStateFile))
+SendLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, MainPID: {2} PID: {3} state file: {4}", idx, mainPID, rmPID, wpStateFile))
 
 PostMessage, MSG_ASSIGN_RMPID, idx, rmPID,, % Format("ahk_pid {1}", mainPID)
-
-SendLog(LOG_LEVEL_INFO, Format("Instance {1} starting reset management", idx))
 
 SetTimer, CheckMain, 5000
 SetTimer, ManageReset, %resetManagementLoopDelay%
@@ -66,36 +48,6 @@ ManageReset() {
     previousWPState := wpState
 }
 
-ManageThisAffinity(activeInstance) {
-    if (idx == activeInstance) { ; this is active instance
-        SendLog(LOG_LEVEL_INFO, Format("instance {1} is the active instance", idx))
-        SetAffinity(pid, playBitMask)
-    } else if activeInstance { ; there is another active instance
-        if (state == "inworld") { ; if loading
-            SetAffinity(pid, lowBitMask)
-        } else {
-            SetAffinity(pid, bgLoadBitMask)
-        }
-    } else { ; there is no active instance
-        if locked { ; if locked
-            SetAffinity(pid, lockBitMask)
-        } else if (state == "previewing") { ; if resetting
-            affinityQueue := Func("SetAffinity").Bind(pid, lowBitMask)
-            SetTimer, %affinityQueue%, -%previewBurstLength%
-        } else if (state == "pre-preview") { ; if preview gen not reached
-            SetAffinity(pid, midBitMask)
-        } else if (state == "inworld") { ; if idle
-            SetAffinity(pid, lowBitMask)
-        } else {
-            SetAffinity(pid, highBitMask)
-        }
-    }
-}
-
-Pause() {
-    ControlSend,, {Blind}{F3 Down}{Esc}{F3 Up}, ahk_pid %pid%
-}
-
 Kill() {
     ExitApp
 }
@@ -113,7 +65,7 @@ ResetSound() {
 
 CheckMain() {
     if (!WinExist(Format("ahk_pid {1}", mainPID))) {
-        SendLog(LOG_LEVEL_INFO, Format("rm {1} didnt find {2}, killing", idx, mainPID))
+        SendLog(LOG_LEVEL_INFO, Format("Reset manager {1} didnt find main script pid {2}, ending process", idx, mainPID))
         Kill()
     }
 }
