@@ -17,7 +17,7 @@ global previousWPState := "unknown"
 OnMessage(MSG_RESET, "ResetSound")
 OnMessage(MSG_KILL, "Kill")
 
-SendLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, MainPID: {2} state file: {4}", idx, mainPID, wpStateFile))
+SendLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, MainPID: {2} state file: {3}", idx, mainPID, wpStateFile))
 
 SetTimer, CheckMain, 5000
 SetTimer, ManageReset, 0

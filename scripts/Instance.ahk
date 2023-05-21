@@ -23,8 +23,6 @@ class Instance {
         this.window := New this.Window(this.idx, this.pid, this.mcDir)
         
         this.window.SetAffinity(highBitMask)
-        
-        SendLog(LOG_LEVEL_INFO, Format("Instance {1} ready for resetting", this.idx))
     }
     
     __Delete() {

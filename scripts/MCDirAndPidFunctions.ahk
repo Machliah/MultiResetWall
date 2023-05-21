@@ -75,7 +75,7 @@ GetPIDFromMcDir(mcdir) {
     ; Broader search if some people use java.exe or some other edge cases
     for proc in ComObjGet("winmgmts:").ExecQuery("Select * from Win32_Process where ExecutablePath like ""%java%""") {
         if ((pid := CheckOnePIDFromMcDir(proc, mcdir)) != -1) {
-            SendLog(LOG_LEVEL_INFO, Format("Got PID: {1} using boarder search from {2}", pid, mcdir))
+            SendLog(LOG_LEVEL_INFO, Format("Got PID: {1} using broader search from {2}", pid, mcdir))
             return pid
         }
     }

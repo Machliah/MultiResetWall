@@ -160,8 +160,8 @@ Class Window {
                 srigt := true
         }
         if !atum {
-            SendLog(LOG_LEVEL_ERROR, Format("Instance {1} missing required mod: atum. Macro will not work. Download: https://github.com/VoidXWalker/Atum/releases. (In directory: {2})", idx, moddir))
-            MsgBox, Instance %idx% missing required mod: atum. Macro will not work. Download: https://github.com/VoidXWalker/Atum/releases.`n(In directory: %moddir%)
+            SendLog(LOG_LEVEL_ERROR, Format("Instance {1} missing required mod: atum. Macro will not work. Download: https://modrinth.com/mod/atum/versions. (In directory: {2})", idx, moddir))
+            MsgBox, Instance %idx% missing required mod: atum. Macro will not work. Download: https://modrinth.com/mod/atum/versions.`n(In directory: %moddir%)
         } else if this.unpauseOnSwitch {
             config := mcDir . "config\atum\atum.properties"
             ; Read the atum.properties and set unpauseOnSwitch to false if a seed is set
@@ -175,10 +175,8 @@ Class Window {
             }
         }
         if !wp {
-            SendLog(LOG_LEVEL_WARNING, Format("Instance {1} missing recommended mod: World Preview. Macro attempted to adapt. Download: https://github.com/VoidXWalker/WorldPreview/releases. (In directory: {2})", idx, moddir))
-            this.doubleCheckUnexpectedLoads := False
-        } else {
-            this.doubleCheckUnexpectedLoads := True
+            SendLog(LOG_LEVEL_ERROR, Format("Instance {1} missing required mod: World Preview. Macro will not work. Download: https://github.com/Minecraft-Java-Edition-Speedrunning/mcsr-worldpreview-1.16.1/releases. (In directory: {2})", idx, moddir))
+            MsgBox, Instance %idx% missing required mod: World Preview. Macro will not work. Download: https://github.com/Minecraft-Java-Edition-Speedrunning/mcsr-worldpreview-1.16.1/releases.`n(In directory: %moddir%)
         }
         FileRead, settings, %optionsFile%
         if !standardSettings {
