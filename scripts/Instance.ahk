@@ -180,7 +180,10 @@ class Instance {
         if (this.GetIdle() || this.GetPlaying()) {
             return
         }
-        
+        if (this.GetResetting()) {
+            SendLog(LOG_LEVEL_INFO, "safety cover uncover")
+            SendOBSCmd(Format("Cover,0,{1}", this.idx))
+        }
         this.state := "idle"
         this.idleStart := time
         this.window.SendPauseInput(this)
