@@ -35,8 +35,6 @@ class Instance {
         if (!this.GetCanReset(bypassLock, extraProt, force))
             Return
         
-        SendLog(LOG_LEVEL_INFO, Format("Instance {1} valid reset triggered", this.idx))
-        
         this.SendReset()
         
         if (mode == "I")
@@ -176,7 +174,7 @@ class Instance {
         pauseFunc := Func("SendPauseInput").Bind(this)
         SetTimer, %pauseFunc%, -0
         affinityFunc := Func("ManageAffinity").Bind(this)
-        SetTimer, %affinityFunc%, -%previewBurstLength%
+        SetTimer, %affinityFunc%, -%burstLength%
     }
     
     UpdateLoad(time) {
@@ -189,7 +187,7 @@ class Instance {
         pauseFunc := Func("SendPauseInput").Bind(this)
         SetTimer, %pauseFunc%, -0
         affinityFunc := Func("ManageAffinity").Bind(this)
-        SetTimer, %affinityFunc%, -%previewBurstLength%
+        SetTimer, %affinityFunc%, -%burstLength%
     }
     
     CloseInstance() {
