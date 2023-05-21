@@ -41,6 +41,10 @@ Class Window {
         CountAttempt()
     }
     
+    SendPauseInput(instance) {
+        ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, % Format("ahk_pid {1}", instance.GetPID())
+    }
+    
     SwitchTo() {
         WinMinimize, % Format("ahk_id {1}", GetProjectorID())
         

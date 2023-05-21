@@ -42,13 +42,6 @@ UpdateInstanceReset(idx) {
     instances[idx].UpdateReset()
 }
 
-SendPauseInput(instance) {
-    if (instance.GetResetting()) {
-        return
-    }
-    ControlSend, ahk_parent, {Blind}{F3 Down}{Esc}{F3 Up}, % Format("ahk_pid {1}", instance.GetPID())
-}
-
 ; File safe function to increment overallAttemptsFile and dailyAttemptsFile each by 1
 CountAttempt() {
     overallFile := FileOpen(overallAttemptsFile, "rw -rw")
@@ -273,7 +266,7 @@ ManageAffinity(instance) {
             if (instance.GetIdleTime() < burstLength) {
                 burstTimeLeft := burstLength - instance.GetIdleTime()
                 affinityFunc := Func("ManageAffinity").Bind(instance)
-                SendLog(LOG_LEVEL_WARN, instance.idx . " idle affinity burst not finished yet, trying again in " . burstTimeLeft)
+                SendLog(LOG_LEVEL_WARNING, instance.idx . " idle affinity burst not finished yet, trying again in " . burstTimeLeft)
                 SetTimer, %affinityFunc%, -%burstTimeLeft%
             } else {
                 ; SendLog(LOG_LEVEL_INFO, instance.idx . " loaded affinity")
@@ -289,7 +282,7 @@ ManageAffinity(instance) {
             if (instance.GetPreviewTime() < burstLength) {
                 burstTimeLeft := burstLength - instance.GetPreviewTime()
                 affinityFunc := Func("ManageAffinity").Bind(instance)
-                SendLog(LOG_LEVEL_WARN, instance.idx . " preview affinity burst not finished yet, trying again in " . burstTimeLeft)
+                SendLog(LOG_LEVEL_WARNING, instance.idx . " preview affinity burst not finished yet, trying again in " . burstTimeLeft)
                 SetTimer, %affinityFunc%, -%burstTimeLeft%
             } else {
                 ; SendLog(LOG_LEVEL_INFO, instance.idx . " preview affinity")

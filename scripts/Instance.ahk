@@ -171,8 +171,7 @@ class Instance {
         
         this.state := "previewing"
         this.previewStart := time
-        pauseFunc := Func("SendPauseInput").Bind(this)
-        SetTimer, %pauseFunc%, -0
+        this.window.SendPauseInput(this)
         affinityFunc := Func("ManageAffinity").Bind(this)
         SetTimer, %affinityFunc%, -%burstLength%
     }
@@ -184,8 +183,7 @@ class Instance {
         
         this.state := "idle"
         this.idleStart := time
-        pauseFunc := Func("SendPauseInput").Bind(this)
-        SetTimer, %pauseFunc%, -0
+        this.window.SendPauseInput(this)
         affinityFunc := Func("ManageAffinity").Bind(this)
         SetTimer, %affinityFunc%, -%burstLength%
     }
