@@ -11,3 +11,4 @@ macro.reload
 /data/*.json
 /media/*
 *-Mach.*
+*.vscode*
