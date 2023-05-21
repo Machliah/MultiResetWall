@@ -40,6 +40,10 @@ GetPreviewTime() {
     return A_TickCount - this.previewStart
 }
 
+GetIdleTime() {
+    return A_TickCount - this.idleStart
+}
+
 GetCanPlay() {
     if (this.GetIdle() || mode == "C")
         return true
