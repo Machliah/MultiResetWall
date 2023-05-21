@@ -28,18 +28,18 @@ global bypassThreshold := -1 ; The maximum number of fully loaded instances wher
 
 ; Affinity
 ; -1 == use macro math to determine thread counts
-global affinityType := "B" ; N = no affinity management, B = basic affinity management, A = advanced affinity mangement (best if used with locking+resetAll)
+global affinityType := "A" ; N = no affinity management, B = basic affinity management, A = advanced affinity mangement (best if used with locking+resetAll)
 global playThreadsOverride := -1 ; Thread count for instance you are playing
 global lockThreadsOverride := -1 ; Thread count for locked instances loading on wall
 global highThreadsOverride := -1 ; Thread count for instances still resetting while on wall
-global midThreadsOverride := -1 ; Thread count for instances loading a preview (previewBurstLength) after detecting it
+global midThreadsOverride := -1 ; Thread count for instances loading a preview (burstLength) after detecting it
 global lowThreadsOverride := -1 ; Thread count for all fully loaded instances
 global bgLoadThreadsOverride := -1 ; Thread count for loading or locked instances in bg
-global previewBurstLength := 600 ; The delay before switching from high to mid while on wall or from bgLoad to low while in bg
+global burstLength := 600 ; The delay before switching from high to mid while on wall or from bgLoad to low while in bg
 
 ; OBS
 global obsControl := "C" ; C = Controller, N = Numpad keys (<10 inst), F = Function keys (f13-f24), ARR = advanced array (see customKeyArray)
-global obsWallSceneKey := "F12" ; Wall hotkey used for all obsControl types except Controller
+global obsWallSceneKey := "" ; Wall hotkey used for all obsControl types except Controller
 global obsCustomKeyArray := [] ; Must be used with advanced array control type. Add keys in quotes separated by commas. The index in the array corresponds to the scene
 global obsResetMediaKey := "" ; Key pressed on any instance reset with sound (used for playing reset media file in obs for recordable/streamable resets and requires addition setup to work)
 global obsLockMediaKey := "" ; Key pressed on any lock instance with sound (used for playing lock media file in obs for recordable/streamable lock sounds and requires addition setup to work)
@@ -53,12 +53,6 @@ global entityDistance := 500
 global fov := 110
 global toggleChunkBorders := True
 global toggleHitBoxes := False
-
-; Reset Management
-global beforePauseDelay := 0 ; extra delay before the final pause for a loading instance. May be needed for very laggy loading. Default (0) should be fine
-global resetManagementTimeout := -1 ; Milliseconds that can pass before reset manager gives up. Too low might leave instances unpaused. Default (-1, don't timeout)
-global manageResetAfter := 300 ; Delay before starting reset management log reading loop. Default (300) likely fine
-global resetManagementLoopDelay := 70 ; Buffer time between log lines check in reset management loop. Lowering will decrease possible pause latencies but increase cpu usage of reset managers. Default (70) likely fine
 
 ; Attempts
 global overallAttemptsFile := "data/ATTEMPTS.txt" ; File to write overall attempt count to
