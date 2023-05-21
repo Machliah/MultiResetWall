@@ -4,6 +4,7 @@
 #NoEnv
 #Persistent
 #SingleInstance Force
+#MaxHotkeysPerInterval, 150
 #Include %A_ScriptDir%\scripts\functions.ahk
 #Include %A_ScriptDir%\scripts\MCDirAndPidFunctions.ahk
 #Include %A_ScriptDir%\scripts\Instance.ahk
