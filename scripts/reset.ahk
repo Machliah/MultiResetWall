@@ -31,7 +31,8 @@ ManageReset() {
     
     FileRead, wpState, %wpStateFile%
     
-    if (wpState == previousWPState || (InStr(wpState, "previewing") && InStr(previousWPState, "previewing")) || (InStr(wpState, "inworld") && InStr(previousWPState, "inworld"))) {
+    ; if its the same kind of state or if its generating after previewing (it should be waiting before it can be generating again)
+    if (wpState == previousWPState || (InStr(previousWPState, "previewing") && (InStr(wpState, "previewing") || InStr(wpState, "generating"))) || (InStr(wpState, "inworld") && InStr(previousWPState, "inworld"))) {
         return
     }
     
