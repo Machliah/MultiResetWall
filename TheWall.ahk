@@ -58,7 +58,7 @@ CheckOBSRunLevel()
 
 BindTrayIconFunctions()
 
-SendOBSCmd(GetCoverTypeObsCmd("Cover",false, instances))
+SendOBSCmd(GetCoverTypeObsCmd("Cover", false, instances))
 
 ; ToWall(0)
 
