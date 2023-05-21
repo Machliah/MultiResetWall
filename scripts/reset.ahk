@@ -31,13 +31,12 @@ ManageReset() {
     
     FileRead, wpState, %wpStateFile%
     
-    if (wpState == previousWPState) {
+    if (wpState == previousWPState || (InStr(wpState, "previewing") && InStr(previousWPState, "previewing")) || (InStr(wpState, "inworld") && InStr(previousWPState, "inworld"))) {
         return
     }
     
     if (InStr(wpState, "previewing")) {
         PostMessage, MSG_PREVIEW, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
-        ; SendOBSCmd(Format("Cover,0,{1}", idx))
     } else if (InStr(wpState, "inworld")) {
         PostMessage, MSG_LOAD, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
     } else if (InStr(wpState, "waiting") || InStr(wpState, "generating")) {

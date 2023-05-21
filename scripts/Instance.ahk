@@ -159,6 +159,7 @@ class Instance {
         }
         
         this.state := "resetting"
+        SendOBSCmd(Format("Cover,1,{1}", this.idx))
         ManageAffinity(this)
     }
     
@@ -169,6 +170,7 @@ class Instance {
         
         this.state := "previewing"
         this.previewStart := time
+        SendOBSCmd(Format("Cover,0,{1}", this.idx))
         this.window.SendPauseInput(this)
         affinityFunc := Func("ManageAffinity").Bind(this)
         SetTimer, %affinityFunc%, -%burstLength%
