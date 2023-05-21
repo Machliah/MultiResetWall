@@ -255,6 +255,7 @@ getHwndForPid(pid) {
     return hWnd
 }
 
+; im so sorry if u wanna understand this function i tried
 ManageAffinity(instance) {
     if (instance.GetPlaying()) { ; this is active instance
         ; SendLog(LOG_LEVEL_INFO, instance.idx . " play affinity")
@@ -269,8 +270,15 @@ ManageAffinity(instance) {
         }
     } else { ; there is no active instance
         if (instance.GetIdle()) { ; full load
-            ; SendLog(LOG_LEVEL_INFO, instance.idx . " loaded affinity")
-            instance.window.SetAffinity(lowBitMask)
+            if (instance.GetIdleTime() < burstLength) {
+                burstTimeLeft := burstLength - instance.GetIdleTime()
+                affinityFunc := Func("ManageAffinity").Bind(instance)
+                SendLog(LOG_LEVEL_WARN, instance.idx . " idle affinity burst not finished yet, trying again in " . burstTimeLeft)
+                SetTimer, %affinityFunc%, -%burstTimeLeft%
+            } else {
+                ; SendLog(LOG_LEVEL_INFO, instance.idx . " loaded affinity")
+                instance.window.SetAffinity(lowBitMask)
+            }
         } else if (instance.GetLocked()) { ; not full loaded but locked
             ; SendLog(LOG_LEVEL_INFO, instance.idx . " locked affinity")
             instance.window.SetAffinity(lockBitMask)
@@ -278,10 +286,10 @@ ManageAffinity(instance) {
             ; SendLog(LOG_LEVEL_INFO, instance.idx . " reset affinity")
             instance.window.SetAffinity(highBitMask)
         } else if (instance.GetPreviewing()) { ; not full loaded or locked or resetting but previewing
-            if (instance.GetPreviewTime() < previewBurstLength) {
-                burstTimeLeft := previewBurstLength - instance.GetPreviewTime()
+            if (instance.GetPreviewTime() < burstLength) {
+                burstTimeLeft := burstLength - instance.GetPreviewTime()
                 affinityFunc := Func("ManageAffinity").Bind(instance)
-                ; SendLog(LOG_LEVEL_INFO, instance.idx . " burst not finished yet, trying again in " . burstTimeLeft)
+                SendLog(LOG_LEVEL_WARN, instance.idx . " preview affinity burst not finished yet, trying again in " . burstTimeLeft)
                 SetTimer, %affinityFunc%, -%burstTimeLeft%
             } else {
                 ; SendLog(LOG_LEVEL_INFO, instance.idx . " preview affinity")
