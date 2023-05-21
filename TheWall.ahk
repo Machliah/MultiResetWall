@@ -61,14 +61,14 @@ BindTrayIconFunctions()
 
 SendOBSCmd(GetCoverTypeObsCmd("Cover", false, instances))
 
-; ToWall(0)
+ToWall(0)
 
 FileAppend,,data/macro.reload
 SendLog(LOG_LEVEL_INFO, "Wall setup done")
 if (!disableTTS)
   ComObjCreate("SAPI.SpVoice").Speak(readyTTS)
 
-SetTimer, CheckOverall, 5000
+SetTimer, CheckOverall, 2500
 OnExit("Shutdown")
 
 #Include hotkeys-Mach.ahk

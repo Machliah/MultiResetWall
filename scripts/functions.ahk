@@ -387,8 +387,16 @@ CheckOverall() {
     for i, inst in instances {
         if (inst.GetPlaying() && inst.GetPID() != pid) {
             inst.SetPlaying(false)
+            if (obsControl != "C") {
+                send {%obsWallSceneKey% down}
+                sleep, %obsDelay%
+                send {%obsWallSceneKey% up}
+            } else {
+                SendOBSCmd(Format("ToWall"))
+            }
         } else if (!inst.GetPlaying() && inst.GetPID() == pid) {
             inst.SetPlaying(true)
+            inst.SwitchToInstanceObs()
         }
     }
 }

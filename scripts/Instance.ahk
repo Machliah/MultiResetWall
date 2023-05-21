@@ -191,6 +191,23 @@ class Instance {
         SetTimer, %affinityFunc%, -%burstLength%
     }
     
+    SwitchToInstanceObs() {
+        obsKey := ""
+        if (obsControl == "C") {
+            SendOBSCmd("Play," . this.idx)
+            return
+        } else if (obsControl == "N") {
+            obsKey := "Numpad" . this.idx
+        } else if (obsControl == "F") {
+            obsKey := "F" . (this.idx+12)
+        } else if (obsControl == "ARR") {
+            obsKey := obsCustomKeyArray[this.idx]
+        }
+        Send {%obsKey% down}
+        Sleep, %obsDelay%
+        Send {%obsKey% up}
+    }
+    
     CloseInstance() {
         WinClose, % Format("ahk_pid {1}", this.pid)
         this.KillResetManager()

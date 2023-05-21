@@ -1,22 +1,5 @@
 ; All methods here are only called by the Instance class and not called from outside the Instance class
 
-SwitchToInstanceObs() {
-    obsKey := ""
-    if (obsControl == "C") {
-        SendOBSCmd("Play," . this.idx)
-        return
-    } else if (obsControl == "N") {
-        obsKey := "Numpad" . this.idx
-    } else if (obsControl == "F") {
-        obsKey := "F" . (this.idx+12)
-    } else if (obsControl == "ARR") {
-        obsKey := obsCustomKeyArray[this.idx]
-    }
-    Send {%obsKey% down}
-    Sleep, %obsDelay%
-    Send {%obsKey% up}
-}
-
 SwitchFiles() {
     FileAppend,, % Format("{1}/sleepbg.lock", USER_PROFILE)
 }
