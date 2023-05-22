@@ -44,6 +44,10 @@ GetIdleTime() {
     return A_TickCount - this.idleStart
 }
 
+GetTimeSinceReset() {
+    return A_TickCount - this.lastReset
+}
+
 GetCanPlay() {
     if (this.GetIdle() || mode == "C")
         return true

@@ -14,6 +14,7 @@ class Instance {
         this.state := "idle"
         this.previewStart := 0
         this.idleStart := 0
+        this.lastReset := 0
         this.focus := true
         
         this.lockImage := Format("{1}lock.png", mcDir)
@@ -143,6 +144,7 @@ class Instance {
         }
         
         this.state := "resetting"
+        this.lastReset := A_TickCount
         
         ManageAffinity(this)
         
@@ -164,7 +166,7 @@ class Instance {
     }
     
     UpdatePreview(time) {
-        if (this.GetPreviewing() || this.GetPlaying()) {
+        if (this.GetPreviewing() || this.GetPlaying() || this.GetTimeSinceReset() < 220) {
             return
         }
         
@@ -181,7 +183,7 @@ class Instance {
             return
         }
         if (this.GetResetting()) {
-            SendLog(LOG_LEVEL_INFO, "safety cover uncover")
+            SendLog(LOG_LEVEL_WARNING, Format("Instance {1} safety cover uncover", this.idx))
             SendOBSCmd(Format("Cover,0,{1}", this.idx))
         }
         this.state := "idle"
