@@ -43,8 +43,7 @@ global bgLoadBitMask := GetBitMask(bgLoadThreads)
 
 Critical, On
 global mainPID := GetScriptPID()
-global instances := []
-CreateInstanceArray()
+global instances := CreateInstanceArray()
 Critical, Off
 
 SetTheme(theme)

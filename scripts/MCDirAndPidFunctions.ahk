@@ -12,9 +12,11 @@ CreateInstanceArray() {
     else
         mcdirs := GetMcDirsFromPids(rawPIDs)
     
+    instArray := []
     for idx, mcDir in mcdirs {
-        instances.Push(new Instance(idx, GetPIDFromMcDir(mcDir), mcDir))
+        instArray.Push(new Instance(idx, GetPIDFromMcDir(mcDir), mcDir))
     }
+    return instArray
 }
 
 GetMcDir(pid) {
