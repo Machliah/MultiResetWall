@@ -180,8 +180,13 @@ class Instance {
     }
     
     UpdateLoad(time) {
-        if (!this.GetPreviewing()) {
+        if (this.GetReset() || this.GetIdle() || this.GetPlaying()) {
             return
+        }
+        
+        if (this.GetResetting()) {
+            SendLog(LOG_LEVEL_WARNING, Format("Instance {1} safety cover uncover", this.idx))
+            SendOBSCmd(Format("Cover,0,{1}", this.idx))
         }
         
         this.state := "idle"

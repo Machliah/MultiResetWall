@@ -31,7 +31,7 @@ ManageReset() {
     
     FileRead, wpState, %wpStateFile%
     
-    ; if its the same kind of state or if its generating after previewing (it should be waiting before it can be generating again)
+    ; if nothing changed or if its generating after previewing (it should be waiting before it can be generating again)
     if (wpState == previousWPState || (InStr(previousWPState, "previewing") && InStr(wpState, "generating"))) {
         return
     }

@@ -31,14 +31,17 @@ GetScriptPID() {
 }
 
 UpdateInstancePreview(idx, time) {
+    ; SendLog(LOG_LEVEL_INFO, idx . " update preview")
     instances[idx].UpdatePreview(time)
 }
 
 UpdateInstanceLoad(idx, time) {
+    ; SendLog(LOG_LEVEL_INFO, idx . " update load")
     instances[idx].UpdateLoad(time)
 }
 
 UpdateInstanceReset(idx, time) {
+    ; SendLog(LOG_LEVEL_INFO, idx . " update reset")
     instances[idx].UpdateReset(time)
 }
 
