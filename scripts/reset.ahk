@@ -19,7 +19,7 @@ OnMessage(MSG_KILL, "Kill")
 
 SendLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, MainPID: {2} state file: {3}", idx, mainPID, wpStateFile))
 
-SetTimer, CheckMain, 5000
+SetTimer, CheckMain, 10
 SetTimer, ManageReset, 0
 
 ManageReset() {
@@ -64,7 +64,7 @@ Kill() {
 
 CheckMain() {
     if (!WinExist(Format("ahk_pid {1}", mainPID))) {
-        SendLog(LOG_LEVEL_INFO, Format("Reset manager {1} didnt find main script pid {2}, ending process", idx, mainPID))
+        SendLog(LOG_LEVEL_WARNING, Format("Reset manager {1} didnt find main script pid {2}, ending process", idx, mainPID))
         Kill()
     }
 }

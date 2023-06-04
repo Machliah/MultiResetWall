@@ -17,7 +17,7 @@ Shutdown(ExitReason, ExitCode) {
     
     FileDelete, data/obs.txt
     for i, instance in instances {
-        instance.KillResetManager()
+        instance.window.SetAffinity(GetBitMask(THREAD_COUNT))
     }
     return
 }
