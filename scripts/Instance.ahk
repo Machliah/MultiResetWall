@@ -180,7 +180,7 @@ class Instance {
     }
     
     UpdateLoad(time) {
-        if (this.GetReset() || this.GetIdle() || this.GetPlaying()) {
+        if (this.GetIdle() || this.GetPlaying()) {
             return
         }
         

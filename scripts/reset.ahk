@@ -12,8 +12,6 @@ global idx := A_Args[1]
 global mainPID := A_Args[2]
 global wpStateFile := A_Args[3]
 
-global previousWPState := "unknown"
-
 OnMessage(MSG_RESET, "ResetSound")
 OnMessage(MSG_KILL, "Kill")
 
@@ -28,6 +26,8 @@ ManageReset() {
     ; generating,%
     ; previewing,%
     ; inworld,unpaused/paused/gamescreenopen
+    
+    static previousWPState := "unknown"
     
     FileRead, wpState, %wpStateFile%
     
