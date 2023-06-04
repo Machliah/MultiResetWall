@@ -32,7 +32,7 @@ ManageReset() {
     FileRead, wpState, %wpStateFile%
     
     ; if its the same kind of state or if its generating after previewing (it should be waiting before it can be generating again)
-    if (wpState == previousWPState || (InStr(previousWPState, "previewing") && InStr(wpState, "generating")) || (InStr(wpState, "inworld") && InStr(previousWPState, "inworld"))) {
+    if (wpState == previousWPState || (InStr(previousWPState, "previewing") && InStr(wpState, "generating"))) {
         return
     }
     
@@ -41,7 +41,7 @@ ManageReset() {
     } else if (InStr(wpState, "inworld")) {
         PostMessage, MSG_LOAD, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
     } else if (InStr(wpState, "waiting") || InStr(wpState, "generating")) {
-        PostMessage, MSG_RESET, idx,,, % Format("ahk_pid {1}", mainPID)
+        PostMessage, MSG_RESET, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
     }
     
     previousWPState := wpState
