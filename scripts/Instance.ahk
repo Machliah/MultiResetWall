@@ -70,7 +70,7 @@ class Instance {
     }
     
     Exit(nextInst:=-1) {
-        this.state := "resetting"
+        this.state := "reset sent"
         
         this.window.GhostPie()
         
@@ -143,7 +143,7 @@ class Instance {
             return
         }
         
-        this.state := "resetting"
+        this.state := "reset sent"
         this.lastReset := A_TickCount
         
         ManageAffinity(this)
@@ -155,40 +155,40 @@ class Instance {
         DetectHiddenWindows, Off
     }
     
-    UpdateReset() {
+    UpdateReset(time) {
         if (this.GetResetting() || this.GetPlaying()) {
             return
         }
         
-        this.state := "resetting"
-        SendOBSCmd(Format("Cover,1,{1}", this.idx))
+        this.state := "reset got"
         ManageAffinity(this)
     }
     
     UpdatePreview(time) {
-        if (this.GetPreviewing() || this.GetPlaying() || this.GetTimeSinceReset() < 220) {
+        if (!this.GetResetting()) {
             return
         }
         
         this.state := "previewing"
-        this.previewStart := time
+        this.previewStart := A_TickCount
+        
         SendOBSCmd(Format("Cover,0,{1}", this.idx))
         this.window.SendPauseInput(this)
+        
         affinityFunc := Func("ManageAffinity").Bind(this)
         SetTimer, %affinityFunc%, -%burstLength%
     }
     
     UpdateLoad(time) {
-        if (this.GetIdle() || this.GetPlaying()) {
+        if (!this.GetPreviewing()) {
             return
         }
-        if (this.GetResetting()) {
-            SendLog(LOG_LEVEL_WARNING, Format("Instance {1} safety cover uncover", this.idx))
-            SendOBSCmd(Format("Cover,0,{1}", this.idx))
-        }
+        
         this.state := "idle"
         this.idleStart := time
+        
         this.window.SendPauseInput(this)
+        
         affinityFunc := Func("ManageAffinity").Bind(this)
         SetTimer, %affinityFunc%, -%burstLength%
     }

@@ -38,8 +38,8 @@ UpdateInstanceLoad(idx, time) {
     instances[idx].UpdateLoad(time)
 }
 
-UpdateInstanceReset(idx) {
-    instances[idx].UpdateReset()
+UpdateInstanceReset(idx, time) {
+    instances[idx].UpdateReset(time)
 }
 
 ; File safe function to increment overallAttemptsFile and dailyAttemptsFile each by 1
@@ -275,7 +275,7 @@ ManageAffinity(instance) {
         } else if (instance.GetLocked()) { ; not full loaded but locked
             ; SendLog(LOG_LEVEL_INFO, instance.idx . " locked affinity")
             instance.window.SetAffinity(lockBitMask)
-        } else if (instance.GetResetting()) { ; not full loaded or locked but resetting
+        } else if (instance.GetResetting() || instance.GetReset()) { ; not full loaded or locked but resetting
             ; SendLog(LOG_LEVEL_INFO, instance.idx . " reset affinity")
             instance.window.SetAffinity(highBitMask)
         } else if (instance.GetPreviewing()) { ; not full loaded or locked or resetting but previewing
@@ -315,11 +315,11 @@ VerifyProjector() {
     GetProjectorID()
 }
 
+; Yell if wrong AHK version
 CheckAHKVersion() {
-    ; Yell if wrong AHK version
     if (SubStr(A_AhkVersion, 1, 3) != "1.1") {
-        SendLog(LOG_LEVEL_INFO, "Wrong AHK version detected, exiting")
-        MsgBox, Wrong AHK version, get version 1.1
+        SendLog(LOG_LEVEL_ERROR, "Wrong AHK version detected, exiting")
+        MsgBox, Wrong AHK version`, get version 1.1
         ExitApp
     }
 }

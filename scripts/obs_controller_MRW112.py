@@ -85,6 +85,7 @@ def handle_lock(render, insts):
 
 
 def handle_cover(render, insts):
+    return
     wall_scene = S.obs_get_scene_by_name(wall_scene_name)
     for num in insts:
         cover_name = cover_format.replace("*", str(num))
