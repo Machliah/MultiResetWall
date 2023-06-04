@@ -47,10 +47,6 @@ ManageReset() {
     previousWPState := wpState
 }
 
-Kill() {
-    ExitApp
-}
-
 ResetSound() {
     if (sounds == "A" || sounds == "F" || sounds == "R") {
         SoundPlay, A_ScriptDir\..\media\reset.wav
@@ -60,6 +56,10 @@ ResetSound() {
         sleep, %obsDelay%
         send {%obsResetMediaKey% up}
     }
+}
+
+Kill() {
+    ExitApp
 }
 
 CheckMain() {

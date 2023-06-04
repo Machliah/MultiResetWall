@@ -388,7 +388,7 @@ GetActiveInstanceNum() {
 CheckOverall() {
     WinGet, pid, PID, A
     for i, inst in instances {
-        if (inst.GetPlaying() && inst.GetPID() != pid) {
+        if (inst.GetPlaying() && inst.GetPID() != pid && WinActive(Format("ahk_id {1}", GetProjectorID()))) {
             inst.SetPlaying(false)
             if (obsControl != "C") {
                 send {%obsWallSceneKey% down}
