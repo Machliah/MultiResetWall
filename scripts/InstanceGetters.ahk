@@ -20,8 +20,12 @@ GetPlaying() {
     return this.state == "playing"
 }
 
+GetReset() {
+    return this.state == "reset sent"
+}
+
 GetResetting() {
-    return this.state == "resetting"
+    return this.state == "reset got"
 }
 
 GetFocus() {
@@ -69,7 +73,7 @@ GetCanReset(bypassLock:=true, extraProt:=0, force:=false) {
     if (this.GetPreviewTime() < spawnProtection + extraProt)
         return false
     
-    if (this.GetPlaying() || this.GetResetting())
+    if (this.GetPlaying() || this.GetResetting() || this.GetReset())
         return false
     
     return true
