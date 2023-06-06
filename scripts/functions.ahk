@@ -244,7 +244,10 @@ ManageAffinity(instance) {
             instance.window.SetAffinity(bgLoadBitMask)
         }
     } else { ; there is no active instance
-        if (instance.GetIdle()) { ; full load
+        if (instance.GetLocked()) { ; not full loaded but locked
+            ; SendLog(LOG_LEVEL_INFO, instance.idx . " locked affinity")
+            instance.window.SetAffinity(lockBitMask)
+        } else if (instance.GetIdle()) { ; full load
             if (instance.GetIdleTime() < burstLength) {
                 burstTimeLeft := burstLength - instance.GetIdleTime()
                 affinityFunc := Func("ManageAffinity").Bind(instance)
@@ -254,9 +257,6 @@ ManageAffinity(instance) {
                 ; SendLog(LOG_LEVEL_INFO, instance.idx . " loaded affinity")
                 instance.window.SetAffinity(lowBitMask)
             }
-        } else if (instance.GetLocked()) { ; not full loaded but locked
-            ; SendLog(LOG_LEVEL_INFO, instance.idx . " locked affinity")
-            instance.window.SetAffinity(lockBitMask)
         } else if (instance.GetResetting() || instance.GetReset()) { ; not full loaded or locked but resetting
             ; SendLog(LOG_LEVEL_INFO, instance.idx . " reset affinity")
             instance.window.SetAffinity(highBitMask)
