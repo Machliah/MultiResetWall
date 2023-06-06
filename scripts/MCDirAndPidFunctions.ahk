@@ -126,7 +126,9 @@ GetMcDirsFromPids(rawPIDs) {
         rawNum := GetRawInstanceNumberFromMcDir(mcDir)
         rawNumToMcDir[rawNum] := mcDir
     }
-    CreateMcDirCache(rawNumToMcDir)
+    if (rawNumToMcDir.Length() > 1) {
+        CreateMcDirCache(rawNumToMcDir)
+    }
     return rawNumToMcDir
 }
 
