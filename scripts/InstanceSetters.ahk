@@ -3,10 +3,10 @@
 SetPlaying(playing) {
     if (playing) {
         this.playing := true
+        ManageAffinity(this)
     } else {
         this.playing := false
     }
-    ManageAffinity(this)
 }
 
 SetLocked(lock) {

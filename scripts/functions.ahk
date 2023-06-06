@@ -1,13 +1,7 @@
 SendLog(logLevel, logMsg) {
     timeStamp := A_TickCount
-    macroLogFile := FileOpen("data/log.log", "a -rwd")
-    if (!IsObject(macroLogFile)) {
-        logQueue := Func("SendLog").Bind(logLevel, logMsg, timeStamp)
-        SetTimer, %logQueue%, -10
-        return
-    }
-    macroLogFile.Write(Format("[{3}] [{4}-{5}-{6} {7}:{8}:{9}] [SYS-{2}] {1}`r`n", logMsg, logLevel, timeStamp, A_YYYY, A_MM, A_DD, A_Hour, A_Min, A_Sec))
-    macroLogFile.Close()
+    fullLogMsg := Format("[{3}] [{4}-{5}-{6} {7}:{8}:{9}] [SYS-{2}] {1}`r`n", logMsg, logLevel, timeStamp, A_YYYY, A_MM, A_DD, A_Hour, A_Min, A_Sec)
+    logMsgQueue .= fullLogMsg
 }
 
 Shutdown(ExitReason, ExitCode) {
@@ -34,27 +28,23 @@ UpdateInstanceState(idx, time, msg) {
     instances[idx].UpdateState(time, msg)
 }
 
-; File safe function to increment overallAttemptsFile and dailyAttemptsFile each by 1
-CountAttempt() {
-    overallFile := FileOpen(overallAttemptsFile, "rw -rw")
-    dailyFile := FileOpen(dailyAttemptsFile, "rw -rw")
+CountAttempts() {
+    FileRead, WorldNumber, % overallAttemptsFile
+    if (ErrorLevel)
+        WorldNumber := resetsQueue
+    else
+        FileDelete, % overallAttemptsFile
+    WorldNumber += resetsQueue
+    FileAppend, %WorldNumber%, % overallAttemptsFile
     
-    if (!IsObject(overallFile) || !IsObject(dailyFile)) {
-        SetTimer, CountAttempt, -100
-        return
-    }
-    
-    overallAttemptCount := overallFile.Read() + 1
-    dailyAttemptCount := dailyFile.Read() + 1
-    
-    overallFile.Pos := 0
-    dailyFile.Pos := 0
-    
-    overallFile.Write(overallAttemptCount)
-    dailyFile.Write(dailyAttemptCount)
-    
-    overallFile.Close()
-    dailyFile.Close()
+    FileRead, WorldNumber, % dailyAttemptsFile
+    if (ErrorLevel)
+        WorldNumber := resetsQueue
+    else
+        FileDelete, % dailyAttemptsFile
+    WorldNumber += resetsQueue
+    FileAppend, %WorldNumber%, % dailyAttemptsFile
+    resetsQueue := 0
 }
 
 GetOldestPreview() {
@@ -375,6 +365,17 @@ GetActiveInstanceNum() {
 }
 
 CheckOverall() {
+    Critical, On
+    if (logMsgQueue) {
+        FileAppend, % logMsgQueue, data/log.log
+        logMsgQueue := ""
+    }
+    
+    if (resetsQueue) {
+        CountAttempts()
+    }
+    Critical, Off
+    
     WinGet, pid, PID, A
     for i, inst in instances {
         if (inst.GetPlaying() && inst.GetPID() != pid) {

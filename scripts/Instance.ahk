@@ -37,14 +37,14 @@ class Instance {
         if (!this.GetCanReset(bypassLock, extraProt, force))
             Return
         
+        this.Unlock(false)
+        
         this.SendReset()
         
         if (mode == "I")
             MoveResetInstance(this.idx)
         else if (obsControl == "C")
             SendOBSCmd(GetCoverTypeObsCmd("Cover",true,[this]))
-        
-        this.Unlock(false)
     }
     
     Switch(special:=false) {
@@ -74,6 +74,7 @@ class Instance {
     
     Exit(nextInst:=-1) {
         this.state := "reset"
+        this.playing := false
         
         this.window.GhostPie()
         
@@ -166,7 +167,7 @@ class Instance {
             return
         }
         
-        this.state := "reset sent"
+        this.state := "reset"
         this.lastReset := A_TickCount
         
         ManageAffinity(this)

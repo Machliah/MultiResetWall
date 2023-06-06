@@ -12,15 +12,16 @@
 #Include <Addons>
 #Include settings-Mach.ahk
 
-CheckAHKVersion()
-
 SetKeyDelay, -1
 SetWinDelay, 1
 SetTitleMatchMode, 2
 SetBatchLines, -1
+CoordMode, Mouse, Screen
 Thread, NoTimers, True
 
 FileDelete, data/log.log
+global logMsgQueue := ""
+global resetsQueue := 0
 
 OnMessage(MSG_TITLE, "UpdateInstanceState")
 OnMessage(MSG_WAITING, "UpdateInstanceState")
@@ -29,6 +30,8 @@ OnMessage(MSG_PREVIEW, "UpdateInstanceState")
 OnMessage(MSG_UNPAUSED, "UpdateInstanceState")
 OnMessage(MSG_PAUSED, "UpdateInstanceState")
 OnMessage(MSG_GAMESCREEN, "UpdateInstanceState")
+
+CheckAHKVersion()
 
 SendLog(LOG_LEVEL_INFO, "Starting MultiResetWall v1.2")
 
@@ -72,7 +75,7 @@ SendLog(LOG_LEVEL_INFO, "Wall setup done")
 if (!disableTTS)
   ComObjCreate("SAPI.SpVoice").Speak(readyTTS)
 
-SetTimer, CheckOverall, 10
+SetTimer, CheckOverall, 250
 OnExit("Shutdown")
 
 #Include hotkeys-Mach.ahk

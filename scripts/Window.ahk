@@ -38,7 +38,7 @@ Class Window {
     
     SendResetInput() {
         ControlSend, ahk_parent, % Format("{Blind}{{1}}{{2}}", this.lpKey, this.resetKey), % Format("ahk_pid {1}", this.pid)
-        CountAttempt()
+        resetsQueue++
     }
     
     SendPauseInput(instance) {
