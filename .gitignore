@@ -13,3 +13,4 @@ macro.reload
 *-Mach.*
 *.vscode*
 *lib*
+*addons*
