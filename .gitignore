@@ -12,3 +12,4 @@ macro.reload
 /media/*
 *-Mach.*
 *.vscode*
+*addons*
