@@ -41,6 +41,8 @@ class Instance {
         
         this.SendReset()
         
+        ManageAffinity(this)
+        
         if (mode == "I")
             MoveResetInstance(this.idx)
         else if (obsControl == "C")
@@ -169,8 +171,6 @@ class Instance {
         
         this.state := "reset"
         this.lastReset := A_TickCount
-        
-        ManageAffinity(this)
         
         this.window.SendResetInput()
         

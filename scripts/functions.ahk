@@ -422,6 +422,8 @@ ResetAll(bypassLock:=false, extraProt:=0) {
         instance.UnlockFiles()
         instance.SendReset()
     }
+    
+    ManageAffinities()
 }
 
 FocusReset(focusInstance, bypassLock:=false, special:=false) {
