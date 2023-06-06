@@ -31,7 +31,7 @@ GetScriptPID() {
 }
 
 UpdateInstanceState(idx, time, msg) {
-    instance[idx].UpdateState(time, msg)
+    instances[idx].UpdateState(time, msg)
 }
 
 ; File safe function to increment overallAttemptsFile and dailyAttemptsFile each by 1
@@ -377,14 +377,16 @@ GetActiveInstanceNum() {
 CheckOverall() {
     WinGet, pid, PID, A
     for i, inst in instances {
-        if (inst.GetPlaying() && inst.GetPID() != pid && WinActive(Format("ahk_id {1}", GetProjectorID()))) {
+        if (inst.GetPlaying() && inst.GetPID() != pid) {
             inst.SetPlaying(false)
-            if (obsControl != "C") {
-                send {%obsWallSceneKey% down}
-                sleep, %obsDelay%
-                send {%obsWallSceneKey% up}
-            } else {
-                SendOBSCmd(Format("ToWall"))
+            if (WinActive(Format("ahk_id {1}", GetProjectorID()))) {
+                if (obsControl != "C") {
+                    send {%obsWallSceneKey% down}
+                    sleep, %obsDelay%
+                    send {%obsWallSceneKey% up}
+                } else {
+                    SendOBSCmd(Format("ToWall"))
+                }
             }
         } else if (!inst.GetPlaying() && inst.GetPID() == pid) {
             inst.SetPlaying(true)
