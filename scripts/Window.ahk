@@ -88,6 +88,9 @@ Class Window {
     }
     
     GhostPie() {
+        if (this.state == "paused" || this.state == "gamescreen") {
+            ControlSend,, {Blind}{Esc}, % Format("ahk_pid {1}", this.pid)
+        }
         if this.f1State
             ControlSend,, {Blind}{F1}{F3}{Esc 3}, % Format("ahk_pid {1}", this.pid)
         else

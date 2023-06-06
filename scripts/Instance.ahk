@@ -75,10 +75,11 @@ class Instance {
     }
     
     Exit(nextInst:=-1) {
-        this.state := "reset"
         this.playing := false
         
         this.window.GhostPie()
+        
+        this.state := "reset"
         
         this.window.ToggleFullscreen(false)
         
