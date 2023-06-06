@@ -9,7 +9,7 @@
 #Include %A_ScriptDir%\scripts\MCDirAndPidFunctions.ahk
 #Include %A_ScriptDir%\scripts\Instance.ahk
 #Include %A_ScriptDir%\scripts\GlobalConstants.ahk
-#Include %A_ScriptDir%\addons\
+#Include <Lib>
 #Include settings-Mach.ahk
 
 CheckAHKVersion()
