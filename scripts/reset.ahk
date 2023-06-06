@@ -32,16 +32,24 @@ ManageReset() {
     FileRead, wpState, %wpStateFile%
     
     ; if nothing changed or if its generating after previewing (it should be waiting before it can be generating again)
-    if (wpState == previousWPState || (InStr(previousWPState, "previewing") && InStr(wpState, "generating"))) {
+    if (wpState == previousWPState) {
         return
     }
     
-    if (InStr(wpState, "previewing")) {
+    if (InStr(wpState, "title")) {
+        PostMessage, MSG_TITLE, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
+    } else if (InStr(wpState, "waiting")) {
+        PostMessage, MSG_WAITING, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
+    } else if (InStr(wpState, "generating")) {
+        PostMessage, MSG_GENERATING, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
+    } else if (InStr(wpState, "previewing")) {
         PostMessage, MSG_PREVIEW, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
-    } else if (InStr(wpState, "inworld")) {
-        PostMessage, MSG_LOAD, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
-    } else if (InStr(wpState, "waiting") || InStr(wpState, "generating")) {
-        PostMessage, MSG_RESET, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
+    } else if (InStr(wpState, "inworld,unpaused")) {
+        PostMessage, MSG_UNPAUSED, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
+    } else if (InStr(wpState, "inworld,paused")) {
+        PostMessage, MSG_PAUSED, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
+    } else if (InStr(wpState, "inworld,gamescreenopen")) {
+        PostMessage, MSG_GAMESCREEN, idx, A_TickCount,, % Format("ahk_pid {1}", mainPID)
     }
     
     previousWPState := wpState

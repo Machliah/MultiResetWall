@@ -30,19 +30,8 @@ GetScriptPID() {
     return scriptPID
 }
 
-UpdateInstancePreview(idx, time) {
-    ; SendLog(LOG_LEVEL_INFO, idx . " update preview")
-    instances[idx].UpdatePreview(time)
-}
-
-UpdateInstanceLoad(idx, time) {
-    ; SendLog(LOG_LEVEL_INFO, idx . " update load")
-    instances[idx].UpdateLoad(time)
-}
-
-UpdateInstanceReset(idx, time) {
-    ; SendLog(LOG_LEVEL_INFO, idx . " update reset")
-    instances[idx].UpdateReset(time)
+UpdateInstanceState(idx, time, msg) {
+    instance[idx].UpdateState(time, msg)
 }
 
 ; File safe function to increment overallAttemptsFile and dailyAttemptsFile each by 1

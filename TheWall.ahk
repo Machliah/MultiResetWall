@@ -9,6 +9,7 @@
 #Include %A_ScriptDir%\scripts\MCDirAndPidFunctions.ahk
 #Include %A_ScriptDir%\scripts\Instance.ahk
 #Include %A_ScriptDir%\scripts\GlobalConstants.ahk
+#Include %A_ScriptDir%\addons\*
 #Include settings-Mach.ahk
 
 CheckAHKVersion()
@@ -21,9 +22,13 @@ Thread, NoTimers, True
 
 FileDelete, data/log.log
 
-OnMessage(MSG_PREVIEW, "UpdateInstancePreview")
-OnMessage(MSG_LOAD, "UpdateInstanceLoad")
-OnMessage(MSG_RESET, "UpdateInstanceReset")
+OnMessage(MSG_TITLE, "UpdateInstanceState")
+OnMessage(MSG_WAITING, "UpdateInstanceState")
+OnMessage(MSG_GENERATING, "UpdateInstanceState")
+OnMessage(MSG_PREVIEW, "UpdateInstanceState")
+OnMessage(MSG_UNPAUSED, "UpdateInstanceState")
+OnMessage(MSG_PAUSED, "UpdateInstanceState")
+OnMessage(MSG_GAMESCREEN, "UpdateInstanceState")
 
 SendLog(LOG_LEVEL_INFO, "Starting MultiResetWall v1.2")
 

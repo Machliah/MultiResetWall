@@ -2,9 +2,9 @@
 
 SetPlaying(playing) {
     if (playing) {
-        this.state := "playing"
+        this.playing := true
     } else {
-        this.state := "idle"
+        this.playing := false
     }
     ManageAffinity(this)
 }

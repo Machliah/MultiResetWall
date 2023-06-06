@@ -10,12 +10,15 @@ class Instance {
         this.pid := pid
         this.mcDir := mcDir
         
+        this.state := "paused"
+        
+        this.playing := false
         this.locked := false
-        this.state := "idle"
+        this.focus := true
+        
         this.previewStart := 0
         this.idleStart := 0
         this.lastReset := 0
-        this.focus := true
         
         this.lockImage := Format("{1}lock.png", mcDir)
         
@@ -56,7 +59,7 @@ class Instance {
             return
         }
         
-        this.state := "playing"
+        this.playing := true
         
         this.SwitchFiles()
         
@@ -70,7 +73,7 @@ class Instance {
     }
     
     Exit(nextInst:=-1) {
-        this.state := "reset sent"
+        this.state := "reset"
         
         this.window.GhostPie()
         
@@ -94,6 +97,26 @@ class Instance {
         this.window.Widen()
         
         this.window.SendToBack()
+    }
+    
+    UpdateState(time, msg) {
+        switch msg
+        {
+        case MSG_TITLE:
+            this.UpdateTitle(time)
+        case MSG_WAITING:
+            this.UpdateWaiting(time)
+        case MSG_GENERATING:
+            this.UpdateGenerating(time)
+        case MSG_PREVIEW:
+            this.UpdatePreview(time)
+        case MSG_UNPAUSED:
+            this.UpdateUnpaused(time)
+        case MSG_PAUSED:
+            this.UpdatePaused(time)
+        case MSG_GAMESCREEN:
+            this.UpdateGamescreen(time)
+        }
     }
     
     Lock(sound:=true, affinityChange:=true) {
@@ -153,49 +176,6 @@ class Instance {
         DetectHiddenWindows, On
         PostMessage, MSG_RESET,,,, % Format("ahk_pid {1}", this.rmPID)
         DetectHiddenWindows, Off
-    }
-    
-    UpdateReset(time) {
-        if (this.GetResetting() || this.GetPlaying()) {
-            return
-        }
-        
-        this.state := "reset got"
-        ManageAffinity(this)
-    }
-    
-    UpdatePreview(time) {
-        if (!this.GetResetting()) {
-            return
-        }
-        
-        this.state := "previewing"
-        this.previewStart := A_TickCount
-        
-        SendOBSCmd(Format("Cover,0,{1}", this.idx))
-        this.window.SendPauseInput(this)
-        
-        affinityFunc := Func("ManageAffinity").Bind(this)
-        SetTimer, %affinityFunc%, -%burstLength%
-    }
-    
-    UpdateLoad(time) {
-        if (this.GetIdle() || this.GetPlaying()) {
-            return
-        }
-        
-        if (this.GetResetting()) {
-            SendLog(LOG_LEVEL_WARNING, Format("Instance {1} safety cover uncover", this.idx))
-            SendOBSCmd(Format("Cover,0,{1}", this.idx))
-        }
-        
-        this.state := "idle"
-        this.idleStart := time
-        
-        this.window.SendPauseInput(this)
-        
-        affinityFunc := Func("ManageAffinity").Bind(this)
-        SetTimer, %affinityFunc%, -%burstLength%
     }
     
     SwitchToInstanceObs() {

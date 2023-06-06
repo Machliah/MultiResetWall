@@ -17,15 +17,15 @@ GetLocked() {
 }
 
 GetPlaying() {
-    return this.state == "playing"
+    return this.playing
 }
 
 GetReset() {
-    return this.state == "reset sent"
+    return this.state == "reset"
 }
 
 GetResetting() {
-    return this.state == "reset got"
+    return this.state == "waiting" || this.state == "generating"
 }
 
 GetFocus() {
@@ -33,11 +33,11 @@ GetFocus() {
 }
 
 GetIdle() {
-    return this.state == "idle"
+    return (this.state == "paused" || this.state == "unpaused" || this.state == "gamescreen") && !this.playing
 }
 
 GetPreviewing() {
-    return this.state == "previewing"
+    return this.state == "preview"
 }
 
 GetPreviewTime() {
