@@ -54,10 +54,10 @@ class Instance {
             this.Lock(false, false)
         }
         
-        if (!this.GetCanPlay() && smartSwitch) {
+        if (!this.GetCanPlay() && smartSwitch && mode != "C") {
             SwitchInstance(FindBypassInstance())
             return
-        } else if !this.GetCanPlay() {
+        } else if (!this.GetCanPlay() && mode != "C") {
             return
         }
         
