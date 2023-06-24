@@ -8,6 +8,11 @@
 SetBatchLines, -1
 DetectHiddenWindows, On
 
+EnvGet, NUMBER_OF_PROCESSORS, NUMBER_OF_PROCESSORS
+EnvGet, USERPROFILE, USERPROFILE
+global THREAD_COUNT := NUMBER_OF_PROCESSORS
+global USER_PROFILE := USERPROFILE
+
 global idx := A_Args[1]
 global mainPID := A_Args[2]
 global wpStateFile := A_Args[3]

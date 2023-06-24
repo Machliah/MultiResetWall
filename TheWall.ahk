@@ -19,6 +19,11 @@ SetBatchLines, -1
 CoordMode, Mouse, Screen
 Thread, NoTimers, True
 
+EnvGet, NUMBER_OF_PROCESSORS, NUMBER_OF_PROCESSORS
+EnvGet, USERPROFILE, USERPROFILE
+global THREAD_COUNT := NUMBER_OF_PROCESSORS
+global USER_PROFILE := USERPROFILE
+
 FileDelete, data/log.log
 global logMsgQueue := ""
 global resetsQueue := 0

@@ -679,7 +679,6 @@ CheckOBSPython() {
         Return
     }
     
-    EnvGet, userProfileDir, USERPROFILE
     obsIni = %userProfileDir%\AppData\Roaming\obs-studio\global.ini
     IniRead, pyDir, %obsIni%, Python, Path64bit, N
     
