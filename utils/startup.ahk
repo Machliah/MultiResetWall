@@ -46,3 +46,5 @@ Loop, Read, %path%
   Run,%cmd%,,Hide
   Sleep, 300
 }
+
+Exit
