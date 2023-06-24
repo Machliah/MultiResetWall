@@ -73,8 +73,6 @@ Class Window {
             ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, % Format("ahk_pid {1}", this.pid)
         if (!this.unpauseOnSwitch)
             ControlSend,, {Blind}{Esc}, % Format("ahk_pid {1}", this.pid)
-        else
-            ControlSend,, {Blind}{Esc 2}, % Format("ahk_pid {1}", this.pid)
     }
     
     OnJoinSettingsChange() {
