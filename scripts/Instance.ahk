@@ -156,13 +156,11 @@ class Instance {
     }
     
     UnlockFiles() {
-        if (!this.locked) {
+        if (!this.locked || obsControl == "C") {
             return
         }
-        if (obsControl != "C") {
-            FileCopy, A_ScriptDir\..\media\unlock.png, % this.lockImage, 1
-            FileSetTime,, % this.lockImage, M
-        }
+        FileCopy, A_ScriptDir\..\media\unlock.png, % this.lockImage, 1
+        FileSetTime,, % this.lockImage, M
     }
     
     SendReset() {

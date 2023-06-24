@@ -80,7 +80,7 @@ SendLog(LOG_LEVEL_INFO, "Wall setup done")
 if (!disableTTS)
   ComObjCreate("SAPI.SpVoice").Speak(readyTTS)
 
-SetTimer, CheckOverall, 250
+SetTimer, CheckOverall, 500
 OnExit("Shutdown")
 
 #Include hotkeys-Mach.ahk

@@ -7,7 +7,7 @@ Class Window {
         this.unpauseOnSwitch := true
         this.hwnd := this.GetHwnd()
         
-        this.VerifyInstance(this.idx, this.pid, this.mcDir)
+        this.VerifyInstance()
         
         this.PrepareWindow()
     }
@@ -73,6 +73,8 @@ Class Window {
             ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, % Format("ahk_pid {1}", this.pid)
         if (!this.unpauseOnSwitch)
             ControlSend,, {Blind}{Esc}, % Format("ahk_pid {1}", this.pid)
+        else
+            ControlSend,, {Blind}{Esc 2}, % Format("ahk_pid {1}", this.pid)
     }
     
     OnJoinSettingsChange() {
@@ -132,8 +134,9 @@ Class Window {
     }
     
     VerifyInstance(idx, pid, mcDir) {
-        moddir := mcDir . "mods\"
-        optionsFile := mcDir . "options.txt"
+        SendLog(LOG_LEVEL_INFO, Format("Starting instance verification for directory: {1}", this.mcDir))
+        moddir := this.mcDir . "mods\"
+        optionsFile := this.mcDir . "options.txt"
         atum := false
         wp := false
         standardSettings := false
@@ -141,7 +144,6 @@ Class Window {
         sleepBg := false
         sodium := false
         srigt := false
-        SendLog(LOG_LEVEL_INFO, Format("Starting instance verification for directory: {1}", mcDir))
         ; Check for mod dependencies
         Loop, Files, %moddir%*.jar
         {
@@ -162,231 +164,250 @@ Class Window {
             else if InStr(A_LoopFileName, "SpeedRunIGT")
                 srigt := true
         }
+        
+        ; Return early if missing either of the 2 required mods
         if !atum {
-            SendLog(LOG_LEVEL_ERROR, Format("Instance {1} missing required mod: atum. Macro will not work. Download: https://modrinth.com/mod/atum/versions. (In directory: {2})", idx, moddir))
-            MsgBox, Instance %idx% missing required mod: atum. Macro will not work. Download: https://modrinth.com/mod/atum/versions.`n(In directory: %moddir%)
-        } else if this.unpauseOnSwitch {
-            config := mcDir . "config\atum\atum.properties"
-            ; Read the atum.properties and set unpauseOnSwitch to false if a seed is set
-            Loop, Read, %config%
-            {
-                if (InStr(A_LoopReadLine, "seed=") && StrLen(A_LoopReadLine) > 5) {
-                    SendLog(LOG_LEVEL_INFO, "Found a set seed, setting 'unpauseOnSwitch' to False")
-                    this.unpauseOnSwitch := False
-                    break
-                }
-            }
+            SendLog(LOG_LEVEL_ERROR, Format("Instance {1} missing required mod: atum. Macro will not work. Download: https://modrinth.com/mod/atum/versions. (In directory: {2})", this.idx, moddir))
+            MsgBox, % Format("Instance {1} missing required mod: atum. Macro will not work. Download: https://modrinth.com/mod/atum/versions.`n(In directory: {2})", this.idx, moddir)
+            return
         }
         if !wp {
             SendLog(LOG_LEVEL_ERROR, Format("Instance {1} missing required mod: World Preview. Macro will not work. Download: https://github.com/Minecraft-Java-Edition-Speedrunning/mcsr-worldpreview-1.16.1/releases. (In directory: {2})", idx, moddir))
-            MsgBox, Instance %idx% missing required mod: World Preview. Macro will not work. Download: https://github.com/Minecraft-Java-Edition-Speedrunning/mcsr-worldpreview-1.16.1/releases.`n(In directory: %moddir%)
+            MsgBox, % Format("Instance {1} missing required mod: World Preview. Macro will not work. Download: https://github.com/Minecraft-Java-Edition-Speedrunning/mcsr-worldpreview-1.16.1/releases.`n(In directory: {2})", this.idx, moddir)
+            return
         }
-        FileRead, settings, %optionsFile%
+        
+        ; Read the atum.properties and set unpauseOnSwitch to false if a seed is set
+        atumConfig := this.mcDir . "config\atum\atum.properties"
+        Loop, Read, %atumConfig%
+        {
+            if (InStr(A_LoopReadLine, "seed=") && StrLen(A_LoopReadLine) > 5) {
+                SendLog(LOG_LEVEL_INFO, "Found a set seed, setting 'unpauseOnSwitch' to False")
+                this.unpauseOnSwitch := False
+                break
+            }
+        }
+        
+        FileRead, options, %optionsFile%
         if !standardSettings {
             SendLog(LOG_LEVEL_WARNING, Format("Instance {1} missing highly recommended mod standardsettings. Download: https://github.com/KingContaria/StandardSettings/releases. (In directory: {2})", idx, moddir))
-            MsgBox, Instance %idx% missing highly recommended mod: standardsettings. Download: https://github.com/KingContaria/StandardSettings/releases.`n(In directory: %moddir%)
-            if InStr(settings, "pauseOnLostFocus:true") {
-                MsgBox, Instance %idx% has required disabled setting pauseOnLostFocus enabled. Please disable it with f3+p and THEN press OK to continue
-                SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had pauseOnLostFocus set true, macro requires it false. User was informed. (In file: {2})", idx, optionsFile))
+            MsgBox, % Format("Instance {1} missing highly recommended mod standardsettings. Download: https://github.com/KingContaria/StandardSettings/releases.`n(In directory: {2})", idx, moddir)
+            ; Verify pauseOnLostFocus
+            if InStr(options, "pauseOnLostFocus:true") {
+                MsgBox, % Format("Instance {1} has required disabled setting pauseOnLostFocus enabled. Please FIRST disable it with f3+p and THEN press OK to continue", this.idx)
+                SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had pauseOnLostFocus set true, macro requires it false. User was informed. (In file: {2})", this.idx, optionsFile))
             }
-            if (atum) {
-                if (InStr(settings, "key_Create New World:key.keyboard.unknown")) {
-                    MsgBox, Instance %idx% missing required hotkey: Create New World. Please set it in your hotkeys and THEN press OK to continue
-                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} had no Create New World key set. User was informed. (In file: {2})", idx, optionsFile))
-                }
-                this.resetKey := CheckOptionsForValue(optionsFile, "key_Create New World", "F6")
-                resetKeys[idx] := resetKey
-                SendLog(LOG_LEVEL_INFO, Format("Found reset key: {1} for instance {2} from {3}", resetKey, idx, optionsFile))
-            }
-            if (wp) {
-                if (InStr(settings, "key_Leave Preview:key.keyboard.unknown")) {
-                    MsgBox, Instance %idx% missing highly recommended hotkey: Leave Preview. Please set it in your hotkeys and THEN press OK to continue
-                    SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Leave Preview key set. User was informed. (In file: {2})", idx, optionsFile))
-                }
-                this.lpKey := CheckOptionsForValue(optionsFile, "key_Leave Preview", "h")
-                lpkeys[idx] := lpKey
-                SendLog(LOG_LEVEL_INFO, Format("Found leave preview key: {1} for instance {2} from {3}", lpKey, idx, optionsFile))
-            }
+            
+            ; Verify fullscreen users fullscreen key
             if (windowMode == "F") {
-                if (InStr(settings, "key_key.fullscreen:key.keyboard.unknown")) {
-                    MsgBox, Instance %idx% missing required hotkey for fullscreen mode: Fullscreen. Please set it in your hotkeys and THEN press OK to continue
-                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} had no Fullscreen key set. User was informed. (In file: {2})", idx, optionsFile))
+                if (InStr(options, "key_key.fullscreen:key.keyboard.unknown")) {
+                    MsgBox, % Format("Instance {1} missing required hotkey for fullscreen mode: Fullscreen. Please FIRST set it in your hotkeys and THEN press OK to continue", this.idx)
+                    SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Fullscreen key set. User was informed. (In file: {2})", this.idx, optionsFile))
                 }
                 this.fsKey := CheckOptionsForValue(optionsFile, "key_key.fullscreen", "F11")
-                fsKeys[idx] := fsKey
-                SendLog(LOG_LEVEL_INFO, Format("Found Fullscreen key: {1} for instance {2} from {3}", fsKey, idx, optionsFile))
+                SendLog(LOG_LEVEL_INFO, Format("Found Fullscreen key: {1} for instance {2} from {3}", this.fsKey, this.idx, optionsFile))
             }
+            
+            ; Verify Create New World key
+            if (InStr(options, "key_Create New World:key.keyboard.unknown")) {
+                MsgBox, % Format("Instance {1} missing required hotkey: Create New World. Please FIRST set it in your hotkeys and THEN press OK to continue", this.idx)
+                SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Create New World key set. User was informed. (In file: {2})", this.idx, optionsFile))
+            }
+            this.resetKey := CheckOptionsForValue(optionsFile, "key_Create New World", "F6")
+            SendLog(LOG_LEVEL_INFO, Format("Found Create New World: {1} for instance {2} from {3}", this.resetKey, this.idx, optionsFile))
+            
+            ; Verify Leave Preview key
+            if (InStr(options, "key_Leave Preview:key.keyboard.unknown")) {
+                MsgBox, % Format("Instance {1} missing highly recommended hotkey: Leave Preview. Please FIRST set it in your hotkeys and THEN press OK to continue", this.idx)
+                SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Leave Preview key set. User was informed. (In file: {2})", this.idx, optionsFile))
+            }
+            this.lpKey := CheckOptionsForValue(optionsFile, "key_Leave Preview", "h")
+            SendLog(LOG_LEVEL_INFO, Format("Found Leave Preview key: {1} for instance {2} from {3}", this.lpKey, this.idx, optionsFile))
+            
         } else {
-            standardSettingsFile := mcDir . "config\standardoptions.txt"
-            FileRead, ssettings, %standardSettingsFile%
-            if (RegExMatch(ssettings, "[A-Z]:(\/|\\).+\.txt", globalPath)) {
-                standardSettingsFile := globalPath
-                SendLog(LOG_LEVEL_INFO, Format("Global standard options file detected, rereading standard options from {1}", standardSettingsFile))
-                FileRead, ssettings, %standardSettingsFile%
+            standardOptionsFile := this.mcDir . "config\standardoptions.txt"
+            FileRead, standardOptions, %standardOptionsFile%
+            
+            ; Check for and use global standard options file
+            if (RegExMatch(standardOptions, "[A-Z]:(\/|\\).+\.txt", globalPath)) {
+                standardOptionsFile := globalPath
+                SendLog(LOG_LEVEL_INFO, Format("Global standard options file detected, rereading standard options from {1}", standardOptionsFile))
+                FileRead, standardOptions, %standardOptionsFile%
             }
-            if InStr(ssettings, "fullscreen:true") {
-                ssettings := StrReplace(ssettings, "fullscreen:true", "fullscreen:false")
-                SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had fullscreen set true, macro requires it false. Automatically fixed. (In file: {2})", idx, standardSettingsFile))
+            
+            ; Fix fullscreen:true in standard options
+            if InStr(standardOptions, "fullscreen:true") {
+                standardOptions := StrReplace(standardOptions, "fullscreen:true", "fullscreen:false")
+                SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had fullscreen set true, macro requires it false. Automatically fixed. (In file: {2})", this.idx, standardOptionsFile))
             }
-            if InStr(ssettings, "pauseOnLostFocus:true") {
-                ssettings := StrReplace(ssettings, "pauseOnLostFocus:true", "pauseOnLostFocus:false")
-                SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had pauseOnLostFocus set true, macro requires it false. Automatically fixed. (In file: {2})", idx, standardSettingsFile))
+            
+            ; Fix pauseOnLostFocus:true in standard options
+            if InStr(standardOptions, "pauseOnLostFocus:true") {
+                standardOptions := StrReplace(standardOptions, "pauseOnLostFocus:true", "pauseOnLostFocus:false")
+                SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had pauseOnLostFocus set true, macro requires it false. Automatically fixed. (In file: {2})", this.idx, standardOptionsFile))
             }
-            if (RegExMatch(ssettings, "f1:.+", f1Match)) {
-                SendLog(LOG_LEVEL_INFO, Format("Instance {1} f1 state '{2}' found. This will be used for ghost pie and instance join. (In file: {3})", idx, f1Match, standardSettingsFile))
+            
+            ; Verify and set instance standard f1 state
+            if (RegExMatch(standardOptions, "f1:.+", f1Match)) {
+                SendLog(LOG_LEVEL_INFO, Format("Instance {1} f1 state '{2}' found. This will be used for ghost pie and instance join. (In file: {3})", this.idx, f1Match, standardOptionsFile))
                 this.f1State := f1Match == "f1:true" ? 2 : 1
             }
+            
+            ; Verify Create New World key
             Loop, 1 {
-                if (InStr(ssettings, "key_Create New World:key.keyboard.unknown") && atum) {
+                if (InStr(standardOptions, "key_Create New World:key.keyboard.unknown")) {
                     Loop, 1 {
-                        MsgBox, 4, Create New World Key, Instance %idx% has no Create New World hotkey set. Would you like to set this back to default (F6)?`n(In file: %standardSettingsFile%)
+                        MsgBox, 4, Create New World Key, % Format("Instance {1} has no Create New World hotkey set. Would you like to set this back to default (F6)?`n(In file: {2})", this.idx, standardOptionsFile)
                         IfMsgBox No
                             break
-                        ssettings := StrReplace(ssettings, "key_Create New World:key.keyboard.unknown", "key_Create New World:key.keyboard.f6")
-                        resetKeys[idx] := "F6"
-                        SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Create New World key set and chose to let it be automatically set to f6. (In file: {2})", idx, standardSettingsFile))
+                        standardOptions := StrReplace(standardOptions, "key_Create New World:key.keyboard.unknown", "key_Create New World:key.keyboard.f6")
+                        this.resetKey := "F6"
+                        SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Create New World key set and chose to let it be automatically set to f6. (In file: {2})", this.idx, standardOptionsFile))
                         break 2
                     }
-                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} has no Create New World key set. (In file: {2})", idx, standardSettingsFile))
-                } else if (InStr(ssettings, "key_Create New World:") && atum) {
-                    if (this.resetKey := CheckOptionsForValue(standardSettingsFile, "key_Create New World", "F6")) {
-                        SendLog(LOG_LEVEL_INFO, Format("Found reset key: {1} for instance {2} from {3}", resetKey, idx, standardSettingsFile))
-                        resetKeys[idx] := resetKey
+                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} has no Create New World key set, macro will not work. (In file: {2})", this.idx, standardOptionsFile))
+                    MsgBox, % Format("Instance {1} has no Create New World key set, macro will not work.`n(In file: {2})", this.idx, standardOptionsFile)
+                    return
+                } else if (InStr(standardOptions, "key_Create New World:")) {
+                    if (this.resetKey := CheckOptionsForValue(standardOptionsFile, "key_Create New World", "F6")) {
+                        SendLog(LOG_LEVEL_INFO, Format("Found reset key: {1} for instance {2} from {3}", this.resetKey, this.idx, standardOptionsFile))
                         break
                     } else {
-                        SendLog(LOG_LEVEL_WARNING, Format("Failed to read reset key for instance {1}, trying to read from {2} instead of {3}", idx, optionsFile, standardSettingsFile))
+                        SendLog(LOG_LEVEL_WARNING, Format("Failed to read reset key for instance {1}, trying to read from {2} instead of {3}", this.idx, optionsFile, standardOptionsFile))
                         if (this.resetKey := CheckOptionsForValue(optionsFile, "key_Create New World", "F6")) {
-                            SendLog(LOG_LEVEL_INFO, Format("Found reset key: {1} for instance {2} from {3}", resetKey, idx, optionsFile))
-                            resetKeys[idx] := resetKey
+                            SendLog(LOG_LEVEL_INFO, Format("Found reset key: {1} for instance {2} from {3}", this.resetKey, this.idx, optionsFile))
                             break
                         }
                     }
-                    SendLog(LOG_LEVEL_ERROR, Format("Failed to find reset key in instance {1}, falling back to 'F6'. (Checked files: {2} and {3})", idx, standardSettingsFile, optionsFile))
-                    resetKeys[idx] := "F6"
-                } else if (InStr(settings, "key_Create New World:key.keyboard.unknown") && atum) {
-                    MsgBox, Instance %idx% has no required hotkey set for Create New World. Please set it in your hotkeys and THEN press OK to continue
-                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} had no Create New World key set. User was informed. (In file: {2})", idx, optionsFile))
+                    SendLog(LOG_LEVEL_ERROR, Format("Failed to find reset key in instance {1}, macro will not work. (Checked files: {2} and {3})", this.idx, standardOptionsFile, optionsFile))
+                    MsgBox, % Format("Failed to find reset key in instance {1}, macro will not work. (Checked files: {2} and {3})", this.idx, standardOptionsFile, optionsFile)
+                    return
+                } else if (InStr(options, "key_Create New World:key.keyboard.unknown")) {
+                    MsgBox, % Format("Instance {1} missing required hotkey: Create New World. Please FIRST set it in your hotkeys and THEN press OK to continue", this.idx)
+                    SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Create New World key set. User was informed. (In file: {2})", this.idx, optionsFile))
                     if (this.resetKey := CheckOptionsForValue(optionsFile, "key_Create New World", "F6")) {
-                        resetKeys[idx] := resetKey
-                        SendLog(LOG_LEVEL_INFO, Format("Found reset key: {1} for instance {2} from {3}", resetKey, idx, optionsFile))
-                    } else {
-                        SendLog(LOG_LEVEL_ERROR, Format("No required atum mod in instance {1}. Using 'f6' to avoid reset manager errors", idx))
-                        resetKeys[idx] := "F6"
+                        SendLog(LOG_LEVEL_INFO, Format("Found reset key: {1} for instance {2} from {3}", this.resetKey, this.idx, optionsFile))
+                        break
                     }
-                } else if (InStr(settings, "key_Create New World:") && atum) {
+                    SendLog(LOG_LEVEL_ERROR, Format("Failed to find reset key in instance {1}, macro will not work. (In file: {2})", this.idx, optionsFile))
+                    MsgBox, % Format("Failed to find reset key in instance {1}, macro will not work.`n(In file: {2})", this.idx, optionsFile)
+                    return
+                } else if (InStr(options, "key_Create New World:")) {
                     if (this.resetKey := CheckOptionsForValue(optionsFile, "key_Create New World", "F6")) {
-                        SendLog(LOG_LEVEL_INFO, Format("Found reset key: {1} for instance {2} from {3}", resetKey, idx, optionsFile))
-                        resetKeys[idx] := resetKey
-                    } else {
-                        SendLog(LOG_LEVEL_ERROR, Format("Failed to find reset key in instance {1}, falling back to 'F6'. (In file: {2})", idx, optionsFile))
-                        resetKeys[idx] := "F6"
+                        SendLog(LOG_LEVEL_INFO, Format("Found reset key: {1} for instance {2} from {3}", this.resetKey, this.idx, optionsFile))
+                        break
                     }
-                } else if (atum) {
-                    MsgBox, No Create New World hotkey found even though you have the mod, you likely have an outdated version. Please update to the latest version.
-                    SendLog(LOG_LEVEL_ERROR, Format("No Create New World hotkey found for instance {1} even though mod is installed. Using 'f6' to avoid reset manager errors", idx))
-                    resetKeys[idx] := "F6"
+                    SendLog(LOG_LEVEL_ERROR, Format("Failed to find reset key in instance {1}, macro will not work. (In file: {2})", this.idx, optionsFile))
+                    MsgBox, % Format("Failed to find reset key in instance {1}, macro will not work.`n(In file: {2})", this.idx, optionsFile)
+                    return
                 } else {
-                    SendLog(LOG_LEVEL_ERROR, Format("No required atum mod in instance {1}. Using 'f6' to avoid reset manager errors", idx))
-                    resetKeys[idx] := "F6"
+                    SendLog(LOG_LEVEL_ERROR, Format("No Create New World hotkey found for instance {1} even though mod is installed.", this.idx))
+                    MsgBox, No Create New World hotkey found even though you have the mod. You likely have an outdated version. Please update to the latest version.
+                    return
                 }
                 break
             }
+            
+            ; Verify Leave Preview key
             Loop, 1 {
-                if (InStr(ssettings, "key_Leave Preview:key.keyboard.unknown") && wp) {
+                if (InStr(standardOptions, "key_Leave Preview:key.keyboard.unknown")) {
                     Loop, 1 {
-                        MsgBox, 4, Leave Preview Key, Instance %idx% has no Leave Preview hotkey set. Would you like to set this back to default (h)?`n(In file: %standardSettingsFile%)
+                        MsgBox, 4, Leave Preview Key, % Format("Instance {1} has no Leave Preview hotkey set. Would you like to set this back to default (h)?`n(In file: {2})", this.idx, standardOptionsFile)
                         IfMsgBox No
                             break
-                        ssettings := StrReplace(ssettings, "key_Leave Preview:key.keyboard.unknown", "key_Leave Preview:key.keyboard.h")
-                        this.lpKeys[idx] := "h"
-                        SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Leave Preview key set and chose to let it be automatically set to 'h'. (In file: {2})", idx, standardSettingsFile))
+                        standardOptions := StrReplace(standardOptions, "key_Leave Preview:key.keyboard.unknown", "key_Leave Preview:key.keyboard.h")
+                        this.lpKey := "h"
+                        SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Leave Preview key set and chose to let it be automatically set to h. (In file: {2})", this.idx, standardOptionsFile))
                         break 2
                     }
-                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} has no Leave Preview key set. (In file: {2})", idx, standardSettingsFile))
-                } else if (InStr(ssettings, "key_Leave Preview:") && wp) {
-                    if (this.lpKey := CheckOptionsForValue(standardSettingsFile, "key_Leave Preview", "h")) {
-                        SendLog(LOG_LEVEL_INFO, Format("Found Leave Preview key: {1} for instance {2} from {3}", lpKey, idx, standardSettingsFile))
-                        lpKeys[idx] := lpKey
+                    SendLog(LOG_LEVEL_WARNING, Format("Instance {1} has no Leave Preview key set. (In file: {2})", this.idx, standardOptionsFile))
+                    MsgBox, % Format("Instance {1} has no Leave Preview key set.`n(In file: {2})", this.idx, standardOptionsFile)
+                    
+                } else if (InStr(standardOptions, "key_Leave Preview:")) {
+                    if (this.lpKey := CheckOptionsForValue(standardOptionsFile, "key_Leave Preview", "h")) {
+                        SendLog(LOG_LEVEL_INFO, Format("Found Leave Preview key: {1} for instance {2} from {3}", this.lpKey, this.idx, standardOptionsFile))
                         break
                     } else {
-                        SendLog(LOG_LEVEL_WARNING, Format("Failed to read Leave Preview key for instance {1}, trying to read from {2} instead of {3}", idx, optionsFile, standardSettingsFile))
+                        SendLog(LOG_LEVEL_WARNING, Format("Failed to read Leave Preview key for instance {1}, trying to read from {2} instead of {3}", this.idx, optionsFile, standardOptionsFile))
                         if (this.lpKey := CheckOptionsForValue(optionsFile, "key_Leave Preview", "h")) {
-                            SendLog(LOG_LEVEL_INFO, Format("Found Leave Preview key: {1} for instance {2} from {3}", lpKey, idx, optionsFile))
-                            lpKeys[idx] := lpKey
+                            SendLog(LOG_LEVEL_INFO, Format("Found Leave Preview key: {1} for instance {2} from {3}", this.lpKey, this.idx, optionsFile))
                             break
                         }
                     }
-                    SendLog(LOG_LEVEL_ERROR, Format("Failed to find Leave Preview key in instance {1}, falling back to 'h'. (Checked files: {2} and {3})", idx, standardSettingsFile, optionsFile))
-                    lpKeys[idx] := "h"
-                } else if (InStr(settings, "key_Leave Preview:key.keyboard.unknown") && wp) {
-                    MsgBox, Instance %idx% has no recommended hotkey set for Leave Preview. Please set it in your hotkeys and THEN press OK to continue
-                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} had no Leave Preview key set. User was informed. (In file: {2})", idx, optionsFile))
+                    SendLog(LOG_LEVEL_ERROR, Format("Failed to find Leave Preview key in instance {1}. (Checked files: {2} and {3})", this.idx, standardOptionsFile, optionsFile))
+                    MsgBox, % Format("Failed to find Leave Preview key in instance {1}. (Checked files: {2} and {3})", this.idx, standardOptionsFile, optionsFile)
+                    
+                } else if (InStr(options, "key_Leave Preview:key.keyboard.unknown")) {
+                    MsgBox, % Format("Instance {1} missing required hotkey: Leave Preview. Please FIRST set it in your hotkeys and THEN press OK to continue", this.idx)
+                    SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Leave Preview key set. User was informed. (In file: {2})", this.idx, optionsFile))
                     if (this.lpKey := CheckOptionsForValue(optionsFile, "key_Leave Preview", "h")) {
-                        resetKeys[idx] := resetKey
-                        SendLog(LOG_LEVEL_INFO, Format("Found Leave Preview key: {1} for instance {2} from {3}", lpKey, idx, optionsFile))
-                    } else {
-                        SendLog(LOG_LEVEL_ERROR, Format("No recommended World Preview mod in instance {1}. Using 'h' to avoid reset manager errors", idx))
-                        lpKeys[idx] := "h"
+                        SendLog(LOG_LEVEL_INFO, Format("Found Leave Preview key: {1} for instance {2} from {3}", this.lpKey, this.idx, optionsFile))
+                        break
                     }
-                } else if (InStr(settings, "key_Leave Preview:") && wp) {
+                    SendLog(LOG_LEVEL_ERROR, Format("Failed to find Leave Preview key in instance {1}. (In file: {2})", this.idx, optionsFile))
+                    MsgBox, % Format("Failed to find Leave Preview key in instance {1}.`n(In file: {2})", this.idx, optionsFile)
+                    
+                } else if (InStr(options, "key_Leave Preview:")) {
                     if (this.lpKey := CheckOptionsForValue(optionsFile, "key_Leave Preview", "h")) {
-                        SendLog(LOG_LEVEL_INFO, Format("Found Leave Preview key: {1} for instance {2} from {3}", lpKey, idx, optionsFile))
-                        lpKeys[idx] := lpKey
-                    } else {
-                        SendLog(LOG_LEVEL_ERROR, Format("Failed to find Leave Preview key in instance {1}, falling back to 'h'. (In file: {2})", idx, optionsFile))
-                        lpKeys[idx] := "h"
+                        SendLog(LOG_LEVEL_INFO, Format("Found Leave Preview key: {1} for instance {2} from {3}", this.lpKey, this.idx, optionsFile))
+                        break
                     }
-                } else if (atum) {
-                    MsgBox, No Leave Preview hotkey found even though you have the mod, something went wrong trying to find the key.
-                    SendLog(LOG_LEVEL_ERROR, Format("No Leave Preview hotkey found for instance {1} even though mod is installed. Using 'h' to avoid reset manager errors", idx))
-                    lpKeys[idx] := "h"
+                    SendLog(LOG_LEVEL_ERROR, Format("Failed to find Leave Preview key in instance {1}. (In file: {2})", this.idx, optionsFile))
+                    MsgBox, % Format("Failed to find Leave Preview key in instance {1}.`n(In file: {2})", this.idx, optionsFile)
+                    
                 } else {
-                    SendLog(LOG_LEVEL_ERROR, Format("No recommended World Preview mod in instance {1}. Using 'h' to avoid reset manager errors", idx))
-                    lpKeys[idx] := "h"
+                    SendLog(LOG_LEVEL_ERROR, Format("No Leave Preview hotkey found for instance {1} even though mod is installed.", this.idx))
+                    MsgBox, No Leave Preview hotkey found even though you have the mod. Please update to the latest version to try and fix the issue.
+                    
                 }
                 break
             }
+            
+            ; Verify fullscreen key for fullscreen users (this key verification is much less detailed and precise than create new world and leave preview keys because these keys are far more likely to be set properly and im lazy)
             Loop, 1 {
-                if (InStr(ssettings, "key_key.fullscreen:key.keyboard.unknown") && windowMode == "F") {
+                if (InStr(standardOptions, "key_key.fullscreen:key.keyboard.unknown") && windowMode == "F") {
                     Loop, 1 {
-                        MsgBox, 4, Fullscreen Key, Instance %idx% missing required hotkey for fullscreen mode: Fullscreen. Would you like to set this back to default (f11)?`n(In file: %standardSettingsFile%)
+                        MsgBox, 4, Fullscreen Key, % Format("Instance {1} missing required hotkey for fullscreen mode: Fullscreen. Would you like to set this back to default (f11)?`n(In file: {2})", this.idx, standardOptionsFile)
                         IfMsgBox No
                             break
-                        ssettings := StrReplace(ssettings, "key_key.fullscreen:key.keyboard.unknown", "key_key.fullscreen:key.keyboard.f11")
+                        standardOptions := StrReplace(standardOptions, "key_key.fullscreen:key.keyboard.unknown", "key_key.fullscreen:key.keyboard.f11")
                         this.fsKey := "F11"
-                        SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Fullscreen key set and chose to let it be automatically set to 'f11'. (In file: {2})", idx, standardSettingsFile))
+                        SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no Fullscreen key set and chose to let it be automatically set to 'f11'. (In file: {2})", this.idx, standardOptionsFile))
                         break 2
                     }
-                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} has no Fullscreen key set. (In file: {2})", idx, standardSettingsFile))
+                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} has no Fullscreen key set, macro will probably not work super well. (In file: {2})", this.idx, standardOptionsFile))
                 } else {
-                    this.fsKey := CheckOptionsForValue(standardSettingsFile, "key_key.fullscreen", "F11")
-                    SendLog(LOG_LEVEL_INFO, Format("Found Fullscreen key: {1} for instance {2} from {3}", fsKey, idx, standardSettingsFile))
-                    fsKeys[idx] := fsKey
+                    this.fsKey := CheckOptionsForValue(standardOptionsFile, "key_key.fullscreen", "F11")
+                    SendLog(LOG_LEVEL_INFO, Format("Found Fullscreen key: {1} for instance {2} from {3}", this.fsKey, this.idx, standardOptionsFile))
                     break
                 }
             }
+            
+            ; Verify command key (same as fullscreen key)
             Loop, 1 {
-                if (InStr(ssettings, "key_key.command:key.keyboard.unknown")) {
+                if (InStr(standardOptions, "key_key.command:key.keyboard.unknown")) {
                     Loop, 1 {
-                        MsgBox, 4, Command Key, Instance %idx% missing recommended command hotkey. Would you like to set this back to default (/)?`n(In file: %standardSettingsFile%)
+                        MsgBox, 4, Command Key, % Format("Instance {1} missing recommended command hotkey. Would you like to set this back to default (/)?`n(In file: {2})", this.idx, standardOptionsFile)
                         IfMsgBox No
                             break
-                        ssettings := StrReplace(ssettings, "key_key.command:key.keyboard.unknown", "key_key.command:key.keyboard.slash")
-                        commandkeys[idx] := "/"
-                        SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no command key set and chose to let it be automatically set to '/'. (In file: {2})", idx, standardSettingsFile))
+                        standardOptions := StrReplace(standardOptions, "key_key.command:key.keyboard.unknown", "key_key.command:key.keyboard.slash")
+                        this.commandKey := "/"
+                        SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had no command key set and chose to let it be automatically set to '/'. (In file: {2})", this.idx, standardOptionsFile))
                         break 2
                     }
-                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} has no command key set. (In file: {2})", idx, standardSettingsFile))
+                    SendLog(LOG_LEVEL_ERROR, Format("Instance {1} has no command key set, macro will be missing some functions. (In file: {2})", this.idx, standardOptionsFile))
                 } else {
-                    commandkey := CheckOptionsForValue(standardSettingsFile, "key_key.command", "/")
-                    SendLog(LOG_LEVEL_INFO, Format("Found Command key: {1} for instance {2} from {3}", commandkey, idx, standardSettingsFile))
-                    commandkeys[idx] := commandkey
+                    this.commandKey := CheckOptionsForValue(standardOptionsFile, "key_key.command", "/")
+                    SendLog(LOG_LEVEL_INFO, Format("Found Command key: {1} for instance {2} from {3}", this.commandKey, this.idx, standardOptionsFile))
                     break
                 }
             }
-            FileDelete, %standardSettingsFile%
-            FileAppend, %ssettings%, %standardSettingsFile%
+            
+            ; Replace auto fixed standard options file to fix automatic corrections
+            FileDelete, %standardOptionsFile%
+            FileAppend, %standardOptions%, %standardOptionsFile%
         }
+        
         if !fastReset
             SendLog(LOG_LEVEL_WARNING, Format("Directory {1} missing recommended mod fast-reset. Download: https://github.com/jan-leila/FastReset/releases", moddir))
         if !sleepBg
@@ -395,8 +416,8 @@ Class Window {
             SendLog(LOG_LEVEL_WARNING, Format("Directory {1} missing recommended mod sodium. Download: https://github.com/jan-leila/sodium-fabric/releases", moddir))
         if !srigt
             SendLog(LOG_LEVEL_WARNING, Format("Directory {1} missing recommended mod SpeedRunIGT. Download: https://redlime.github.io/SpeedRunIGT/", moddir))
-        FileRead, settings, %optionsFile%
-        if InStr(settings, "fullscreen:true") {
+        
+        if InStr(options, "fullscreen:true") {
             ControlSend, ahk_parent, % Format("{Blind}{{1}}", this.fsKey), % Format("ahk_pid {1}", this.pid)
         }
         SendLog(LOG_LEVEL_INFO, Format("Finished instance verification for directory: {1}", mcDir))
