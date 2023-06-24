@@ -52,12 +52,6 @@ UpdateUnpaused(time) {
     }
     
     if (this.GetPlaying()) {
-        if (this.f1State == 2)
-            ControlSend,, {Blind}{F1}, % Format("ahk_pid {1}", this.pid)
-        if (coop)
-            ControlSend,, {Blind}{Esc}{Tab 7}{Enter}{Tab 4}{Enter}{Tab}{Enter}, % Format("ahk_pid {1}", this.pid)
-        if (!this.unpauseOnSwitch)
-            ControlSend,, {Blind}{Esc}, % Format("ahk_pid {1}", this.pid)
         return
     }
     
