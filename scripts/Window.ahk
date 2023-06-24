@@ -94,9 +94,9 @@ Class Window {
             ControlSend,, {Blind}{Esc}, % Format("ahk_pid {1}", this.pid)
         }
         if this.f1State
-            ControlSend,, {Blind}{F1}{F3}{Esc 3}, % Format("ahk_pid {1}", this.pid)
+            ControlSend,, {Blind}{F1}{F3}, % Format("ahk_pid {1}", this.pid)
         else
-            ControlSend,, {Blind}{F3}{Esc 3}, % Format("ahk_pid {1}", this.pid)
+            ControlSend,, {Blind}{F3}, % Format("ahk_pid {1}", this.pid)
     }
     
     Restore() {
@@ -133,7 +133,7 @@ Class Window {
         WinSetTitle, % Format("ahk_pid {1}", this.pid), , % Format("Minecraft* - Instance {1}", this.idx)
     }
     
-    VerifyInstance(idx, pid, mcDir) {
+    VerifyInstance() {
         SendLog(LOG_LEVEL_INFO, Format("Starting instance verification for directory: {1}", this.mcDir))
         moddir := this.mcDir . "mods\"
         optionsFile := this.mcDir . "options.txt"
