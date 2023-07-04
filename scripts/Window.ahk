@@ -234,13 +234,13 @@ Class Window {
             }
             
             ; Fix fullscreen:true in standard options
-            if InStr(standardOptions, "fullscreen:true") {
+            if (InStr(standardOptions, "fullscreen:true") && instances.Length() > 1) {
                 standardOptions := StrReplace(standardOptions, "fullscreen:true", "fullscreen:false")
                 SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had fullscreen set true, macro requires it false. Automatically fixed. (In file: {2})", this.idx, standardOptionsFile))
             }
             
             ; Fix pauseOnLostFocus:true in standard options
-            if InStr(standardOptions, "pauseOnLostFocus:true") {
+            if (InStr(standardOptions, "pauseOnLostFocus:true") && instances.Length() > 1) {
                 standardOptions := StrReplace(standardOptions, "pauseOnLostFocus:true", "pauseOnLostFocus:false")
                 SendLog(LOG_LEVEL_WARNING, Format("Instance {1} had pauseOnLostFocus set true, macro requires it false. Automatically fixed. (In file: {2})", this.idx, standardOptionsFile))
             }
@@ -415,7 +415,7 @@ Class Window {
         if !srigt
             SendLog(LOG_LEVEL_WARNING, Format("Directory {1} missing recommended mod SpeedRunIGT. Download: https://redlime.github.io/SpeedRunIGT/", moddir))
         
-        if InStr(options, "fullscreen:true") {
+        if (InStr(options, "fullscreen:true")) {
             ControlSend, ahk_parent, % Format("{Blind}{{1}}", this.fsKey), % Format("ahk_pid {1}", this.pid)
         }
         SendLog(LOG_LEVEL_INFO, Format("Finished instance verification for directory: {1}", mcDir))

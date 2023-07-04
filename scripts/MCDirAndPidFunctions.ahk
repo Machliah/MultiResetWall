@@ -121,14 +121,16 @@ GetMcDirFromFile(idx) {
 GetMcDirsFromPids(rawPIDs) {
     SendLog(LOG_LEVEL_INFO, "Getting MC directories from raw pid array")
     rawNumToMcDir := {}
+    if (rawPIDs.Length() == 1) {
+        SendLog(LOG_LEVEL_INFO, "Only 1 instance detected, macro will adjust its usage")
+        return [GetMcDir(rawPIDs[1])]
+    }
     for i, rawPID in rawPIDs {
         mcDir := GetMcDir(rawPID)
         rawNum := GetRawInstanceNumberFromMcDir(mcDir)
         rawNumToMcDir[rawNum] := mcDir
     }
-    if (rawNumToMcDir.Length() > 1) {
-        CreateMcDirCache(rawNumToMcDir)
-    }
+    CreateMcDirCache(rawNumToMcDir)
     return rawNumToMcDir
 }
 
