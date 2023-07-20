@@ -10,7 +10,7 @@ macro.reload
 *.txt
 /data/*.json
 /media/*
-*-Mach.*
+*-Mach*
 *.vscode*
 *lib*
 *addons*
