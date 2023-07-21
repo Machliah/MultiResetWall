@@ -633,7 +633,7 @@ LaunchInstances() {
     MsgBox, 4, Launch Instances?, Launch all of your instances?
     IfMsgBox No
         Return
-    Run, "%A_ScriptDir%\utils\startup.ahk", %A_ScriptDir%
+    RunWait, "%A_ScriptDir%\utils\startup.ahk", %A_ScriptDir%
 }
 
 GetLineCount(file) {
