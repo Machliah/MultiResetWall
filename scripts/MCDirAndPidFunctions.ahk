@@ -130,8 +130,14 @@ GetMcDirsFromPids(rawPIDs) {
         rawNum := GetRawInstanceNumberFromMcDir(mcDir)
         rawNumToMcDir[rawNum] := mcDir
     }
-    CreateMcDirCache(rawNumToMcDir)
-    return rawNumToMcDir
+    fixedMcDirs := []
+    for i, mcDir in rawNumToMcDir {
+        if (mcDir) {
+            fixedMcDirs.Push(mcDir)
+        }
+    }
+    CreateMcDirCache(fixedMcDirs)
+    return fixedMcDirs
 }
 
 GetMcDirsFromCache(instCount){

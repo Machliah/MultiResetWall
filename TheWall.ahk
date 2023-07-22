@@ -38,7 +38,7 @@ OnMessage(MSG_GAMESCREEN, "UpdateInstanceState")
 
 CheckAHKVersion()
 
-SendLog(LOG_LEVEL_INFO, "Starting MultiResetWall v1.2")
+ForceLog(LOG_LEVEL_INFO, "Starting MultiResetWall v1.2")
 
 global playThreads := playThreadsOverride > 0 ? playThreadsOverride : THREAD_COUNT ; total threads unless override
 global lockThreads := lockThreadsOverride > 0 ? lockThreadsOverride : THREAD_COUNT ; total threads unless override
@@ -80,7 +80,7 @@ SendLog(LOG_LEVEL_INFO, "Wall setup done")
 if (!disableTTS)
   ComObjCreate("SAPI.SpVoice").Speak(readyTTS)
 
-SetTimer, CheckOverall, 500
+SetTimer, CheckOverall, 2000
 OnExit("Shutdown")
 
 #Include hotkeys-Mach.ahk

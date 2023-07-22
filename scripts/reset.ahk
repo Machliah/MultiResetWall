@@ -20,7 +20,7 @@ global wpStateFile := A_Args[3]
 OnMessage(MSG_RESET, "ResetSound")
 OnMessage(MSG_KILL, "Kill")
 
-SendLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, MainPID: {2} state file: {3}", idx, mainPID, wpStateFile))
+ForceLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, MainPID: {2} state file: {3}", idx, mainPID, wpStateFile))
 
 SetTimer, CheckMain, 10
 SetTimer, ManageReset, 0
@@ -77,7 +77,7 @@ Kill() {
 
 CheckMain() {
     if (!WinExist(Format("ahk_pid {1}", mainPID))) {
-        SendLog(LOG_LEVEL_WARNING, Format("Reset manager {1} didnt find main script pid {2}, ending process", idx, mainPID))
+        ForceLog(LOG_LEVEL_WARNING, Format("Reset manager {1} didnt find main script pid {2}, ending process", idx, mainPID))
         Kill()
     }
 }

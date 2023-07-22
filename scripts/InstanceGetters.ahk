@@ -52,6 +52,10 @@ GetTimeSinceReset() {
     return A_TickCount - this.lastReset
 }
 
+GetIsOpen() {
+    return WinExist(Format("ahk_pid {1}", this.pid))
+}
+
 GetCanPlay() {
     if (this.GetIdle() || mode == "C")
         return true

@@ -4,6 +4,18 @@ SendLog(logLevel, logMsg) {
     logMsgQueue .= fullLogMsg
 }
 
+ForceLog(logLevel, logMsg) {
+    timeStamp := A_TickCount
+    macroLogFile := FileOpen("data/log.log", "a -rwd")
+    if (!IsObject(macroLogFile)) {
+        logQueue := Func("SendLog").Bind(logLevel, logMsg, timeStamp)
+        SetTimer, %logQueue%, -10
+        return
+    }
+    macroLogFile.Write(Format("[{3}] [{4}-{5}-{6} {7}:{8}:{9}] [SYS-{2}] {1}`r`n", logMsg, logLevel, timeStamp, A_YYYY, A_MM, A_DD, A_Hour, A_Min, A_Sec))
+    macroLogFile.Close()
+}
+
 Shutdown(ExitReason, ExitCode) {
     if (ExitReason == "Logoff" || ExitReason == "Shutdown") {
         return
@@ -378,6 +390,11 @@ CheckOverall() {
     
     WinGet, pid, PID, A
     for i, inst in instances {
+        if (!inst.GetIsOpen()) {
+            SendLog(LOG_LEVEL_WARNING, Format("Removed instance {1} from instance array likely because it was closed manually, macro will continue to function normally", i))
+            inst.KillResetManager()
+            instances.RemoveAt(i)
+        }
         if (inst.GetPlaying() && inst.GetPID() != pid) {
             inst.SetPlaying(false)
             if (WinActive(Format("ahk_id {1}", GetProjectorID()))) {
@@ -634,6 +651,7 @@ LaunchInstances() {
     IfMsgBox No
         Return
     RunWait, "%A_ScriptDir%\utils\startup.ahk", %A_ScriptDir%
+    Reload
 }
 
 GetLineCount(file) {
