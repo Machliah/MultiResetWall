@@ -396,8 +396,8 @@ CheckOverall() {
             instances.RemoveAt(i)
         }
         if (inst.GetPlaying() && inst.GetPID() != pid) {
-            inst.SetPlaying(false)
             if (WinActive(Format("ahk_id {1}", GetProjectorID()))) {
+                inst.SetPlaying(false)
                 if (obsControl != "C") {
                     send {%obsWallSceneKey% down}
                     sleep, %obsDelay%
