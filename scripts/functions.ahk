@@ -395,16 +395,14 @@ CheckOverall() {
             inst.KillResetManager()
             instances.RemoveAt(i)
         }
-        if (inst.GetPlaying() && inst.GetPID() != pid) {
-            if (WinActive(Format("ahk_id {1}", GetProjectorID()))) {
-                inst.SetPlaying(false)
-                if (obsControl != "C") {
-                    send {%obsWallSceneKey% down}
-                    sleep, %obsDelay%
-                    send {%obsWallSceneKey% up}
-                } else {
-                    SendOBSCmd(Format("ToWall"))
-                }
+        if (inst.GetPlaying() && inst.GetPID() != pid && WinActive(Format("ahk_id {1}", GetProjectorID()))) {
+            inst.SetPlaying(false)
+            if (obsControl != "C") {
+                send {%obsWallSceneKey% down}
+                sleep, %obsDelay%
+                send {%obsWallSceneKey% up}
+            } else {
+                SendOBSCmd(Format("ToWall"))
             }
         } else if (!inst.GetPlaying() && inst.GetPID() == pid) {
             inst.SetPlaying(true)
