@@ -22,7 +22,7 @@ OnMessage(MSG_KILL, "Kill")
 
 ForceLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, MainPID: {2} state file: {3}", idx, mainPID, wpStateFile))
 
-SetTimer, CheckMain, 10
+SetTimer, CheckMain, 500
 SetTimer, ManageReset, 0
 
 ManageReset() {
