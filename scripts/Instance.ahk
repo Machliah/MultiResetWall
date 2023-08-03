@@ -54,7 +54,7 @@ class Instance {
     
     Switch(special:=false) {
         if (!this.locked) {
-            this.Lock(false, false)
+            this.Lock(false)
         }
         
         if (!this.GetCanPlay() && smartSwitch && mode != "C") {
