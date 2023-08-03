@@ -17,7 +17,7 @@ global readyTTS := "Ready" ; What the text-to-speach says to you when the macro 
 ; Delays (Defaults are probably fine)
 global spawnProtection := 300 ; Prevent a new instance from being reset for this many milliseconds after the preview is visible
 global fullscreenDelay := 50 ; Increase if fullscreening issues
-global freezeWaitTime := 300000 ; How long before background instances are automatically suspended, disable with autoIdleFreezing
+global freezeWaitTime := 300000 ; How long before background instances are automatically suspended, enable with autoIdleFreezing
 
 ; Super advanced settings (Read about these settings on the README before changing)
 
