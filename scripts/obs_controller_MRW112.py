@@ -118,31 +118,7 @@ def handle_cover(render, insts):
 
         S.obs_source_release(mc_source)
 
-        # TESTING RUNNING RESET SOUNDS IN OBS
-        # if render:
-        #     r = play_sound(num, 0.65 / len(insts) + 0.1)
-        #     S.obs_source_release(r)
-
     S.obs_scene_release(wall_scene)
-
-
-def play_sound(num, vol):
-    mediaSource = S.obs_source_create_private("ffmpeg_source", "Reset Sound", None)
-    s = S.obs_data_create()
-    S.obs_data_set_string(
-        s,
-        "local_file",
-        "C:/Users/Jude/Desktop/Minecraft/WallStuff/SpecMachro/MachWall/MultiResetWall/media/reset.wav",
-    )
-    S.obs_source_update(mediaSource, s)
-    S.obs_source_set_monitoring_type(
-        mediaSource, S.OBS_MONITORING_TYPE_MONITOR_AND_OUTPUT
-    )
-    S.obs_source_set_volume(mediaSource, vol)
-    S.obs_data_release(s)
-
-    S.obs_set_output_source(int(num), mediaSource)
-    return mediaSource
 
 
 def execute_cmd(cmd):
