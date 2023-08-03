@@ -293,6 +293,15 @@ ManageAffinities() {
     }
 }
 
+SuspendOne() {
+    for idx, instance in instances {
+        if (!instance.GetPlaying() && !instance.GetLocked() && !instance.GetSuspended()) {
+            instance.SuspendInstance()
+            return
+        }
+    }
+}
+
 SuspendAll() {
     for idx, instance in instances {
         if (!instance.GetPlaying() && !instance.GetLocked() && !instance.GetSuspended()) {
@@ -448,7 +457,7 @@ CheckOverall() {
             inst.SetPlaying(true)
             inst.SwitchToInstanceObs()
         } else if (inst.GetPlaying() && inst.GetPID() == pid && autoIdleFreezing && inst.GetPlayTime() >= freezeWaitTime) {
-            SuspendAll()
+            SuspendOne()
         }
     }
     
