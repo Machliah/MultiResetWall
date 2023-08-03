@@ -20,6 +20,10 @@ GetPlaying() {
     return this.playing
 }
 
+GetSuspended() {
+    return this.suspended
+}
+
 GetReset() {
     return this.state == "reset"
 }
@@ -46,6 +50,10 @@ GetPreviewTime() {
 
 GetIdleTime() {
     return A_TickCount - this.idleStart
+}
+
+GetPlayTime(){
+    return A_TickCount - this.playStart
 }
 
 GetTimeSinceReset() {

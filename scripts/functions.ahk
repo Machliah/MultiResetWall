@@ -23,6 +23,7 @@ Shutdown(ExitReason, ExitCode) {
     
     FileDelete, data/obs.txt
     for i, instance in instances {
+        instance.ResumeInstance()
         instance.window.SetAffinity(GetBitMask(THREAD_COUNT))
     }
     return
@@ -292,6 +293,42 @@ ManageAffinities() {
     }
 }
 
+SuspendAll() {
+    for idx, instance in instances {
+        if (!instance.GetPlaying() && !instance.GetLocked() && !instance.GetSuspended()) {
+            instance.SuspendInstance()
+        }
+    }
+}
+
+UnsuspendAll() {
+    for idx, instance in instances {
+        if (instance.GetSuspended()) {
+            instance.ResumeInstance()
+        }
+    }
+}
+
+UnsuspendEverythingMinecraft() {
+    WinGet, all, list
+    Loop, %all%
+    {
+        WinGet, pid, PID, % "ahk_id " all%A_Index%
+        WinGetTitle, title, ahk_pid %pid%
+        if (InStr(title, "Minecraft*")) {
+            ResumeInstance(pid)
+        }
+    }
+}
+
+ResumeInstance(pid) {
+    hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", pid)
+    If (hProcess) {
+        DllCall("ntdll.dll\NtResumeProcess", "Int", hProcess)
+        DllCall("CloseHandle", "Int", hProcess)
+    }
+}
+
 GetBitMask(threads) {
     return ((2 ** threads) - 1)
 }
@@ -404,10 +441,19 @@ CheckOverall() {
             } else {
                 SendOBSCmd(Format("ToWall"))
             }
+            if (autoIdleFreezing) {
+                UnsuspendAll()
+            }
         } else if (!inst.GetPlaying() && inst.GetPID() == pid) {
             inst.SetPlaying(true)
             inst.SwitchToInstanceObs()
+        } else if (inst.GetPlaying() && inst.GetPID() == pid && autoIdleFreezing && inst.GetPlayTime() >= freezeWaitTime) {
+            SuspendAll()
         }
+    }
+    
+    if (WinActive(Format("ahk_id {1}", GetProjectorID()))) {
+        UnsuspendAll()
     }
 }
 
@@ -436,9 +482,8 @@ ResetAll(bypassLock:=false, extraProt:=0) {
         instance.SetLocked(false)
         instance.UnlockFiles()
         instance.SendReset()
+        ManageAffinity(instance)
     }
-    
-    ManageAffinities()
 }
 
 FocusReset(focusInstance, bypassLock:=false, special:=false) {
@@ -529,7 +574,7 @@ GetLockImage() {
     }
     
     Random, randLock, 1, % lockImages.MaxIndex()
-    SendLog(LOG_LEVEL_INFO, Format("{1} being used as lock", lockImages[randLock]))
+    ; SendLog(LOG_LEVEL_INFO, Format("{1} being used as lock", lockImages[randLock]))
     
     return lockImages[randLock]
 }
@@ -542,26 +587,43 @@ UnlockInstance(idx, sound:=true) {
     instances[idx].Unlock(sound)
 }
 
-LockSound(sound) {
-    if (sound && (sounds == "A" || sounds == "F" || sound == "L")) {
-        SoundPlay, A_ScriptDir\..\media\lock.wav
-        if obsLockMediaKey {
-            send {%obsLockMediaKey% down}
-            sleep, %obsDelay%
-            send {%obsLockMediaKey% up}
+LockAll(sound:=true, affinityChange:=true) {
+    lockable := GetFocusGridInstances()
+    
+    SendOBSCmd(GetCoverTypeObsCmd("Lock", true, lockable))
+    
+    for i, instance in lockable {
+        instance.SetLocked(true)
+        instance.LockFiles()
+        if affinityChange {
+            ManageAffinity(instance)
         }
     }
+    
+    if (!sound) {
+        return
+    }
+    DetectHiddenWindows, On
+    PostMessage, MSG_LOCK,,,, % Format("ahk_pid {1}", instances[1].rmPID)
+    DetectHiddenWindows, Off
 }
 
-UnlockSound(sound) {
-    if (sound && (sounds == "A" || sounds == "F" || sound == "L")) {
-        SoundPlay, A_ScriptDir\..\media\unlock.wav
-        if obsUnlockMediaKey {
-            send {%obsUnlockMediaKey% down}
-            sleep, %obsDelay%
-            send {%obsUnlockMediaKey% up}
-        }
+UnlockAll(sound:=true) {
+    unlockable := GetFocusGridInstances()
+    
+    SendOBSCmd(GetCoverTypeObsCmd("Lock", false, unlockable))
+    
+    for i, instance in unlockable {
+        instance.SetLocked(false)
+        instance.UnlockFiles()
     }
+    
+    if (!sound) {
+        return
+    }
+    DetectHiddenWindows, On
+    PostMessage, MSG_UNLOCK,,,, % Format("ahk_pid {1}", instances[1].rmPID)
+    DetectHiddenWindows, Off
 }
 
 GetFocusGridInstances() {
@@ -572,35 +634,6 @@ GetFocusGridInstances() {
         }
     }
     return focusGridInstances
-}
-
-LockAll(sound:=true, affinityChange:=true) {
-    lockable := GetFocusGridInstances()
-    
-    SendOBSCmd(GetCoverTypeObsCmd("Lock",true, lockable))
-    
-    for i, instance in lockable {
-        instance.SetLocked(true)
-        instance.LockFiles()
-        if affinityChange {
-            ManageAffinity(instance)
-        }
-    }
-    
-    LockSound(sound)
-}
-
-UnlockAll(sound:=true) {
-    unlockable := GetFocusGridInstances()
-    
-    SendOBSCmd(GetCoverTypeObsCmd("Lock",false, unlockable))
-    
-    for i, instance in unlockable {
-        instance.SetLocked(false)
-        instance.UnlockFiles()
-    }
-    
-    UnlockSound(sound)
 }
 
 PlayNextLock(focusReset:=false, bypassLock:=false, special:=false) {
@@ -624,7 +657,7 @@ WorldBop(confirm:=true) {
     if (SubStr(RunHide("python.exe --version"), 1, 6) == "Python") {
         cmd := "python.exe """ . A_ScriptDir . "\scripts\worldBopper9000x.py"""
         SendLog(LOG_LEVEL_INFO, "Running worldBopper9000x.py to clear worlds")
-        RunWait,%cmd%, %A_ScriptDir%\scripts ,Hide
+        RunWait, %cmd%, %A_ScriptDir%\scripts, Hide
     } else {
         SendLog(LOG_LEVEL_INFO, "Running slowBopper2000,ahk to clear worlds")
         RunWait, "%A_ScriptDir%\scripts\slowBopper2000.ahk", %A_ScriptDir%
@@ -764,10 +797,11 @@ GetFocusGridInstanceCount() {
 NotifyMovingController() {
     output := ""
     focusGridInstanceCount := GetFocusGridInstanceCount() ; To prevent looping every time
-    for idx, inst in instancePosition {
-        if (output != "" )
-            output := output . ","
-        output := output . inst
+    for idx, inst in instances {
+        if (output != "" ) {
+            output .= ","
+        }
+        output .= Format("{1}{2}", idx, inst.GetPosition())
         if (mode != "I") {
             output := output . "W"
             Continue

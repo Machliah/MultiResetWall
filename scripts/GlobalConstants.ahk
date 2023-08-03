@@ -8,8 +8,9 @@ global MSG_GAMESCREEN := 0x04E26
 
 global MSG_PLAY := 0x04E27
 global MSG_LOCK := 0x04E28
-global MSG_RESET := 0x04E29
-global MSG_KILL := 0x04E2A
+global MSG_UNLOCK := 0x04E29
+global MSG_RESET := 0x04E2A
+global MSG_KILL := 0x04E2B
 
 global LOG_LEVEL_INFO := "INFO"
 global LOG_LEVEL_WARNING := "WARN"

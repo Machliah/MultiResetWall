@@ -15,9 +15,11 @@ class Instance {
         this.playing := false
         this.locked := false
         this.focus := true
+        this.suspended := false
         
         this.previewStart := 0
         this.idleStart := 0
+        this.playStart := 0
         this.lastReset := 0
         
         this.lockImage := Format("{1}lock.png", mcDir)
@@ -30,6 +32,7 @@ class Instance {
     }
     
     __Delete() {
+        this.ResumeInstance()
         this.KillResetManager()
     }
     
@@ -62,6 +65,7 @@ class Instance {
         }
         
         this.playing := true
+        this.playStart := A_TickCount
         
         this.SwitchFiles()
         
@@ -89,6 +93,7 @@ class Instance {
         
         this.Reset(,,true)
         
+        UnsuspendAll()
         ManageAffinities()
         
         nextInst := GetNextInstance(this.idx, nextInst)
@@ -134,7 +139,12 @@ class Instance {
             ManageAffinity(this)
         }
         
-        LockSound(sound)
+        if (!sound) {
+            return
+        }
+        DetectHiddenWindows, On
+        PostMessage, MSG_LOCK,,,, % Format("ahk_pid {1}", this.rmPID)
+        DetectHiddenWindows, Off
     }
     
     Unlock(sound:=true) {
@@ -144,7 +154,12 @@ class Instance {
         
         this.locked := false
         
-        UnlockSound(sound)
+        if (!sound) {
+            return
+        }
+        DetectHiddenWindows, On
+        PostMessage, MSG_UNLOCK,,,, % Format("ahk_pid {1}", this.rmPID)
+        DetectHiddenWindows, Off
     }
     
     LockFiles() {
@@ -195,7 +210,36 @@ class Instance {
         Send {%obsKey% up}
     }
     
+    FreeMemory() {
+        h := DllCall("OpenProcess", "UInt", 0x001F0FFF, "Int", 0, "Int", this.pid)
+        DllCall("SetProcessWorkingSetSize", "UInt", h, "Int", -1, "Int", -1)
+        DllCall("CloseHandle", "Int", h)
+    }
+    
+    SuspendInstance() {
+        if (this.playing) {
+            return
+        }
+        this.suspended := true
+        hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", this.pid)
+        If (hProcess) {
+            DllCall("ntdll.dll\NtSuspendProcess", "Int", hProcess)
+            DllCall("CloseHandle", "Int", hProcess)
+        }
+        this.FreeMemory()
+    }
+    
+    ResumeInstance() {
+        hProcess := DllCall("OpenProcess", "UInt", 0x1F0FFF, "Int", 0, "Int", this.pid)
+        If (hProcess) {
+            DllCall("ntdll.dll\NtResumeProcess", "Int", hProcess)
+            DllCall("CloseHandle", "Int", hProcess)
+        }
+        this.suspended := false
+    }
+    
     CloseInstance() {
+        this.ResumeInstance()
         WinClose, % Format("ahk_pid {1}", this.pid)
         this.KillResetManager()
     }

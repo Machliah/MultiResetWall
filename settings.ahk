@@ -7,8 +7,9 @@ global windowMode := "W" ; W = windowed mode, F = fullscreen mode, B = borderles
 ; Extra features
 global widthMultiplier := 2.5 ; How wide your instances go to maximize visibility :) (set to 0 for no width change)
 global coop := False ; Automatically opens to LAN when you load in a world
-global sounds := "A" ; A = all, F = only functions, R = only resets, T = only tts, L = only locks, N = no sounds
+global sounds := "A" ; A = all, F = everything but tts, R = only resets, T = only tts, L = only locks, N = no sounds
 global audioGui := False ; A simple GUI so the OBS application audio plugin can capture sounds
+global autoIdleFreezing := False ; Automatically suspend and freeze background instances while playing an instance, good for long categories (configure delay in delays section)
 global smartSwitch := False ; Find an instance to switch to if current one is unloaded
 global theme := "default" ; the name of the folder you wish to use as your macro theme in the global themes folder
 global readyTTS := "Ready" ; What the text-to-speach says to you when the macro is ready
@@ -16,6 +17,7 @@ global readyTTS := "Ready" ; What the text-to-speach says to you when the macro 
 ; Delays (Defaults are probably fine)
 global spawnProtection := 300 ; Prevent a new instance from being reset for this many milliseconds after the preview is visible
 global fullscreenDelay := 50 ; Increase if fullscreening issues
+global freezeWaitTime := 300000 ; How long before background instances are automatically suspended, disable with autoIdleFreezing
 
 ; Super advanced settings (Read about these settings on the README before changing)
 

@@ -55,6 +55,7 @@ global lowBitMask := GetBitMask(lowThreads)
 global bgLoadBitMask := GetBitMask(bgLoadThreads)
 
 Critical, On
+UnsuspendEverythingMinecraft()
 global mainPID := GetScriptPID()
 global instances := CreateInstanceArray()
 Critical, Off

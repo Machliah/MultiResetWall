@@ -18,6 +18,8 @@ global mainPID := A_Args[2]
 global wpStateFile := A_Args[3]
 
 OnMessage(MSG_RESET, "ResetSound")
+OnMessage(MSG_LOCK, "LockSound")
+OnMessage(MSG_UNLOCK, "UnlockSound")
 OnMessage(MSG_KILL, "Kill")
 
 ForceLog(LOG_LEVEL_INFO, Format("Instance {1} reset manager started, MainPID: {2} state file: {3}", idx, mainPID, wpStateFile))
@@ -68,6 +70,28 @@ ResetSound() {
         send {%obsResetMediaKey% down}
         sleep, %obsDelay%
         send {%obsResetMediaKey% up}
+    }
+}
+
+LockSound() {
+    if (sounds == "A" || sounds == "F" || sounds == "L") {
+        SoundPlay, A_ScriptDir\..\media\lock.wav
+    }
+    if obsLockMediaKey {
+        send {%obsLockMediaKey% down}
+        sleep, %obsDelay%
+        send {%obsLockMediaKey% up}
+    }
+}
+
+UnlockSound() {
+    if (sounds == "A" || sounds == "F" || sounds == "L") {
+        SoundPlay, A_ScriptDir\..\media\unlock.wav
+    }
+    if obsUnlockMediaKey {
+        send {%obsUnlockMediaKey% down}
+        sleep, %obsDelay%
+        send {%obsUnlockMediaKey% up}
     }
 }
 
