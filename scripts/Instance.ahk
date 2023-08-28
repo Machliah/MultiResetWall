@@ -22,8 +22,6 @@ class Instance {
         this.playStart := 0
         this.lastReset := 0
         
-        this.lockImage := Format("{1}lock.png", mcDir)
-        
         this.LaunchResetManager()
         
         this.window := New this.Window(this.idx, this.pid, this.mcDir)
@@ -129,8 +127,6 @@ class Instance {
     }
     
     Lock(sound:=true, affinityChange:=true) {
-        this.LockFiles()
-        
         this.LockOBS()
         
         this.locked := true
@@ -148,8 +144,6 @@ class Instance {
     }
     
     Unlock(sound:=true) {
-        this.UnlockFiles()
-        
         this.UnlockOBS()
         
         this.locked := false
@@ -160,22 +154,6 @@ class Instance {
         DetectHiddenWindows, On
         PostMessage, MSG_UNLOCK,,,, % Format("ahk_pid {1}", this.rmPID)
         DetectHiddenWindows, Off
-    }
-    
-    LockFiles() {
-        if (this.locked) {
-            return
-        }
-        FileCopy, % GetLockImage(), % this.lockImage, 1
-        FileSetTime,, % this.lockImage, M
-    }
-    
-    UnlockFiles() {
-        if (!this.locked || obsControl == "C") {
-            return
-        }
-        FileCopy, A_ScriptDir\..\media\unlock.png, % this.lockImage, 1
-        FileSetTime,, % this.lockImage, M
     }
     
     SendReset() {
