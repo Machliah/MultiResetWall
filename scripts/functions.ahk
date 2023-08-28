@@ -437,9 +437,8 @@ CheckOverall() {
     WinGet, pid, PID, A
     for i, inst in instances {
         if (!inst.GetIsOpen()) {
-            SendLog(LOG_LEVEL_WARNING, Format("Removed instance {1} from instance array likely because it was closed manually, macro will continue to function normally", i))
+            SendLog(LOG_LEVEL_WARNING, Format("Instance {1} likely crashed, closing state manager, macro will continue to function normally", i))
             inst.KillResetManager()
-            instances.RemoveAt(i)
         }
         if (inst.GetPlaying() && inst.GetPID() != pid && WinActive(Format("ahk_id {1}", GetProjectorID()))) {
             inst.SetPlaying(false)
@@ -489,7 +488,6 @@ ResetAll(bypassLock:=false, extraProt:=0) {
     
     for i, instance in resetable {
         instance.SetLocked(false)
-        instance.UnlockFiles()
         instance.SendReset()
         ManageAffinity(instance)
     }
@@ -497,7 +495,7 @@ ResetAll(bypassLock:=false, extraProt:=0) {
 
 FocusReset(focusInstance, bypassLock:=false, special:=false) {
     SwitchInstance(focusInstance, special)
-    ResetAll(bypassLock, spawnProtection)
+    ResetAll(bypassLock, spawnProtection+spawnProtection)
 }
 
 GetResetableInstances(checkInstances, bypassLock:=false, extraProt:=0) {
@@ -572,22 +570,6 @@ ToWall(comingFrom) {
     }
 }
 
-GetLockImage() {
-    static lockImages := []
-    if (lockImages.MaxIndex() < 1) {
-        Loop, Files, %A_ScriptDir%\media\lock*.png
-        {
-            lockImages.Push(A_LoopFileFullPath)
-        }
-        SendLog(LOG_LEVEL_INFO, Format("Theme lock count found to be {1}", lockImages.MaxIndex()))
-    }
-    
-    Random, randLock, 1, % lockImages.MaxIndex()
-    ; SendLog(LOG_LEVEL_INFO, Format("{1} being used as lock", lockImages[randLock]))
-    
-    return lockImages[randLock]
-}
-
 LockInstance(idx, sound:=true, affinityChange:=true) {
     instances[idx].Lock(sound, affinityChange)
 }
@@ -603,7 +585,6 @@ LockAll(sound:=true, affinityChange:=true) {
     
     for i, instance in lockable {
         instance.SetLocked(true)
-        instance.LockFiles()
         if affinityChange {
             ManageAffinity(instance)
         }
@@ -624,7 +605,6 @@ UnlockAll(sound:=true) {
     
     for i, instance in unlockable {
         instance.SetLocked(false)
-        instance.UnlockFiles()
     }
     
     if (!sound) {
